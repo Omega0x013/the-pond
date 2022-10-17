@@ -5,7 +5,7 @@ import flat from '@omega0x013/flat-express';
 
 // Initialise server and constants
 const app = express();
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 // Describes route mappings
 const router = flat({
@@ -21,5 +21,5 @@ app.use(express.json());
 
 // Set the server to await and serve connections.
 app.listen(PORT, () => {
-  console.log(`Listening on port ${8000}`);
+  console.log(`Listening on port ${PORT}`);
 });
