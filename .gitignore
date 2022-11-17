@@ -105,6 +105,3 @@ dist
 
 # Database file
 *.db
-
-# Package lock
-package-lock.json
