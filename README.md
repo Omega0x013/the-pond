@@ -8,9 +8,3 @@ This is a viewer link to the [design documents](https://docs.google.com/document
 ```
 npm start
 ```
-
-To set the port for the server:
-
-```
-(export PORT=8000; npm start)
-```

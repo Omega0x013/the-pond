@@ -1,20 +1,38 @@
-<!doctype html>
-<title>ExoPet</title>
-<meta charset=utf-8>
-<meta lang=en>
-<meta name=description content="width=device-width, initial-scale=1">
-<meta name=author content="Xander Bielby">
-<meta name=description content="A game about lovable little jelly creatures.">
-<link rel=stylesheet href="style.css">
-<link rel=stylesheet href="https://s3-us-west-2.amazonaws.com/colors-css/2.2.0/colors.min.css">
+<!DOCTYPE html>
+<title>ExoPet - Home</title>
+<style>
+    .primary-tone {
+        fill: grey;
+    }
+    .secondary-tone {
+        fill: gainsboro;
+    }
+    svg {
+        width: 40em;
+        height: 40em;
+        stroke: black;
+        stroke-width: 0.5;
+        fill-rule:initial;
+    }
+</style>
 
-<header>
-    <h1>ExoPet</h1>
-    <p>A game about lovable little jelly creatures.</p>
-</header>
+<!-- the face of the pet is altered based on its emotion.
+    The color scheme held in the stylesheet originally isn't
+    possible in the generation, and shows that the pet hasn't loaded -->
+<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 
-<main>
-</main>
+    <defs>
+        <!-- <path id="leg" class="primary-tone" d="M0,0 c-1,3 2,3 1,0 z" /> -->
+        <path id="legs" class="primary-tone" d="M0,0 c-1,3 2,3 1,0 z M1,0 c-1,3 2,3 1,0 z M2,0 c-1,3 2,3 1,0 z" />
+    </defs>
 
-<footer>
-</footer>
+    <use href="#legs" x="0" y="0" transform="translate(5.25,15.1)" />
+    <use href="#legs" x="0" y="0" transform="translate(14.75,15.1) scale(-1,1)" />
+
+    <g id="ears">
+        <path id="left-ear" class="secondary-tone" d="M0,0 a 0.75 0.75 1 1 1 0.5,-0.5 z" transform="translate(4,4)" />
+        <path id="right-ear" class="secondary-tone" d="M0,0 a 0.75 0.75 1 1 1 0.5,-0.5 z" transform="translate(16,4) scale(-1,1)" />
+    </g>
+
+    <path id="body" class="primary-tone" d="M5,15 C-5,-3 25,-3 15,15 z" />
+</svg>

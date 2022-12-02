@@ -1,22 +1,19 @@
 {
   "name": "exopet",
   "version": "1.0.0",
-  "description": "Animal Androids...",
+  "description": "A game about lovable little jelly creatures.",
   "type": "module",
   "scripts": {
-    "start": "npm i; node src/index.js"
+    "start": "npx http-server www"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Omega0x013/exopet.git"
   },
-  "author": "",
+  "author": "Xander Bielby",
   "license": "MPL-2.0",
   "bugs": {
     "url": "https://github.com/Omega0x013/exopet/issues"
   },
-  "homepage": "https://github.com/Omega0x013/exopet#readme",
-  "dependencies": {
-    "express": "^4.18.2"
-  }
+  "homepage": "https://github.com/Omega0x013/exopet#readme"
 }
