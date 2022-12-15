@@ -4,7 +4,7 @@
   "description": "A game about lovable little jelly creatures.",
   "type": "module",
   "scripts": {
-    "start": "npx http-server www"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,9 @@
   "bugs": {
     "url": "https://github.com/Omega0x013/exopet/issues"
   },
-  "homepage": "https://github.com/Omega0x013/exopet#readme"
+  "homepage": "https://github.com/Omega0x013/exopet#readme",
+  "dependencies": {
+    "@omega0x013/flat-express": "^1.2.1",
+    "express": "^4.18.2"
+  }
 }

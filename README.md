@@ -5,6 +5,14 @@ This is a viewer link to the [design documents](https://docs.google.com/document
 
 ## Run
 
+This will launch the server on port 8080:
+
 ```
 npm start
+```
+
+If you need to run it on another port run:
+
+```
+(export PORT=8080; npm start)
 ```

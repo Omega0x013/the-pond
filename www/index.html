@@ -1,38 +1,101 @@
 <!DOCTYPE html>
-<title>ExoPet - Home</title>
+<title>ExoPet</title>
 <style>
+    :root {
+        --primary: peru;
+        --secondary: purple;
+        --pet-size: 10em;
+    }
+
     .primary-tone {
-        fill: grey;
+        fill: var(--primary);
     }
+
     .secondary-tone {
-        fill: gainsboro;
+        fill: var(--secondary);
     }
+
     svg {
-        width: 40em;
-        height: 40em;
+        width: var(--pet-size);
+        height: var(--pet-size);
         stroke: black;
         stroke-width: 0.5;
-        fill-rule:initial;
+        fill-rule: initial;
+    }
+
+    .hidden {
+        visibility: hidden;
     }
 </style>
 
-<!-- the face of the pet is altered based on its emotion.
+<header>
+    
+</header>
+<main>
+    <!-- the face of the pet is altered based on its emotion.
     The color scheme held in the stylesheet originally isn't
     possible in the generation, and shows that the pet hasn't loaded -->
-<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
 
-    <defs>
-        <!-- <path id="leg" class="primary-tone" d="M0,0 c-1,3 2,3 1,0 z" /> -->
-        <path id="legs" class="primary-tone" d="M0,0 c-1,3 2,3 1,0 z M1,0 c-1,3 2,3 1,0 z M2,0 c-1,3 2,3 1,0 z" />
-    </defs>
+        <defs>
+            <path id="leg" class="primary-tone" d="M0,0 c-1,3 2,3 1,0 z M1.5,0 c-1,3 2,3 1,0 z M3,0 c-1,3 2,3 1,0 z" />
+            <path id="ear" class="secondary-tone" d="M0,0 a 0.75 0.75 1 1 1 0.5,-0.5 z" />
 
-    <use href="#legs" x="0" y="0" transform="translate(5.25,15.1)" />
-    <use href="#legs" x="0" y="0" transform="translate(14.75,15.1) scale(-1,1)" />
+            <g id="happy-eye">
+                <path class="secondary-tone" d="M0,0 C -2,-3 4,-3 2,0 z" />
+                <ellipse fill="black" cx="1.5" cy="-0.75" rx="0.5" y="0.5" />
+            </g>
 
-    <g id="ears">
-        <path id="left-ear" class="secondary-tone" d="M0,0 a 0.75 0.75 1 1 1 0.5,-0.5 z" transform="translate(4,4)" />
-        <path id="right-ear" class="secondary-tone" d="M0,0 a 0.75 0.75 1 1 1 0.5,-0.5 z" transform="translate(16,4) scale(-1,1)" />
-    </g>
+            <g id="sad-eye">
+                <path class="secondary-tone" d="M0,0 C -1.5,2 3,3.5 1.5,-0.5 z" />
+                <ellipse fill="black" cx="1.25" cy="1.1" rx="0.5" y="0.5" />
+            </g>
 
-    <path id="body" class="primary-tone" d="M5,15 C-5,-3 25,-3 15,15 z" />
-</svg>
+            <path id="smile" fill="none" d="M0,0 C0,2 8,2 8,0" />
+            <use id="frown" href="#smile" transform="scale(1,-1)" />
+
+            <path id="dead-eye" d="M0,0 L2,2 M2,0 L0,2" />
+
+            <g id="happy-face">
+                <use href="#happy-eye" transform="translate(6,8)" />
+                <use href="#happy-eye" transform="translate(14,8) scale(-1,1)" />
+                <use href="#smile" transform="translate(6,10)" />
+            </g>
+
+            <g id="sad-face">
+                <use href="#sad-eye" transform="translate(6,7)" />
+                <use href="#sad-eye" transform="translate(14,7) scale(-1,1)" />
+                <use href="#frown" transform="translate(6,12)" />
+            </g>
+
+            <g id="dead-face">
+                <use href="#dead-eye" transform="translate(6,7)" />
+                <use href="#dead-eye" transform="translate(14,7) scale(-1,1)" />
+                <use href="#frown" transform="translate(6,12)" />
+            </g>
+
+            <g id="joyful-face">
+                <use href="#happy-eye" transform="translate(6,8)" />
+                <use href="#happy-eye" transform="translate(14,8) scale(-1,1)" />
+                <path id="grin" d="M0,0 C0,3 8,3 8,0 z" fill="darkred" transform="translate(6,10)" />
+            </g>
+        </defs>
+
+        <g id="legs">
+            <use href="#leg" transform="translate(5.25,15.1)" />
+            <use href="#leg" transform="translate(14.75,15.1) scale(-1,1)" />
+        </g>
+
+        <g id="ears">
+            <use href="#ear" transform="translate(4,4)" />
+            <use href="#ear" transform="translate(16,4) scale(-1,1)" />
+        </g>
+
+        <path id="body" class="primary-tone" d="M5,15 C -5,-3 25,-3 15,15 z" />
+
+        <use class="hidden" href="#happy-face" />
+        <use class="hidden" href="#sad-face" />
+        <use href="#dead-face" />
+        <use class="hidden" href="#joyful-face" />
+    </svg>
+</main>
