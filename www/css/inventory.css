@@ -1,0 +1,19 @@
+/*
+This file formats the inventory section (the footer tag)
+The inventory is composed of two parts: the icons, and the dialogs.
+*/
+
+/* Dialogs */
+
+dialog::backdrop {
+    backdrop-filter: blur(1px);
+}
+
+/* Icons */
+
+footer {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: start;
+    align-items: flex-start;
+}

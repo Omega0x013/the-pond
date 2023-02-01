@@ -1,0 +1,16 @@
+{
+    "short_name": "ExoPet",
+    "name": "ExoPet",
+    "description": "A game about lovable little jelly creatures.",
+    "icons": [
+        {
+            "src": "/img/icon.svg",
+            "type": "image/svg+xml",
+            "sizes": "any",
+            "purpose": "any"
+        }
+    ],
+    "display": "minimal-ui",
+    "start_url": "/",
+    "scope": "/"
+}
