@@ -15,5 +15,10 @@ footer {
     display: flex;
     flex-flow: row wrap;
     justify-content: start;
-    align-items: flex-start;
+    align-items: center;
+}
+
+.count {
+    font-size: small;
+    color: grey;
 }
