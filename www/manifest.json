@@ -4,7 +4,7 @@
     "description": "A game about lovable little jelly creatures.",
     "icons": [
         {
-            "src": "/img/icon.svg",
+            "src": "/img/frog-sit.svg",
             "type": "image/svg+xml",
             "sizes": "any",
             "purpose": "any"
