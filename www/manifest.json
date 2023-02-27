@@ -1,7 +1,7 @@
 {
-    "short_name": "ExoPet",
-    "name": "ExoPet",
-    "description": "A game about lovable little jelly creatures.",
+    "short_name": "Pond",
+    "name": "The Pond",
+    "description": "Own a froggy friend.",
     "icons": [
         {
             "src": "/img/frog-sit.svg",
