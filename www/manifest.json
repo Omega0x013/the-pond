@@ -1,16 +1,16 @@
 {
-    "short_name": "Pond",
-    "name": "The Pond",
-    "description": "Own a froggy friend.",
-    "icons": [
-        {
-            "src": "/img/frog-sit.svg",
-            "type": "image/svg+xml",
-            "sizes": "any",
-            "purpose": "any"
-        }
-    ],
-    "display": "minimal-ui",
-    "start_url": "/",
-    "scope": "/"
+  "short_name": "Pond",
+  "name": "The Pond",
+  "description": "Own a froggy friend.",
+  "icons": [
+    {
+      "src": "/img/frog-sit.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    }
+  ],
+  "display": "minimal-ui",
+  "start_url": "/",
+  "scope": "/"
 }
