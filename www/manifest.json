@@ -12,5 +12,6 @@
   ],
   "display": "minimal-ui",
   "start_url": "/",
+  "id": "/",
   "scope": "/"
 }

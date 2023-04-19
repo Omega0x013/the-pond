@@ -1,15 +1,21 @@
 /**
  * Translate a co-ordinate according to a visual root.
- * @param {{x, y}} point Absolute co-ordinates
- * @param {{x, y}} root Relative co-ordinates
+ * @param {{x, y}} point Internal co-ordinates
+ * @param {{x, y}} camera Camera co-ordinates
  * @returns {{x, y}}
  */
-export function translate(point, root = { x: 0, y: 0 }) {
-  return { x: point.x + (root.x ?? 0), y: point.y + (root.y ?? 0) };
+export function translate(point, camera = { x: 0, y: 0 }) {
+  return { x: point.x - camera.x, y: point.y - camera.y };
 }
 
 
-export class Frame {
+export class Graphic {
+  /**
+   * @param {string} path File path to load
+   * @param {number} scale Scale multiplier
+   * @param {number} cx Center X
+   * @param {number} cy Center Y
+   */
   constructor(path, scale, cx, cy) {
     this.image = new Image();
     this.image.src = path;
@@ -24,41 +30,137 @@ export class Frame {
    */
   draw(ctx, point, rotation) {
     ctx.setTransform(this.scale, 0, 0, this.scale, point.x, point.y);
-    ctx.rotate((rotation / 180) * Math.PI);
+    ctx.rotate(rotation);
     ctx.drawImage(this.image, -this.cx, -this.cy);
   }
 }
 
 
+/**
+ * An entity is composed of a circle, a facing direction, and a set of graphics.
+ */
 export class Entity {
   /**
-   * @param {Array<Frame>} frames Array of drawable
+   * @param {Array<Graphic>} frames Array of drawable graphics
    * @param {{x, y}} point 
    * @param {number} radius 
    * @param {number} rotation 
    */
-  constructor(frames, point = { x: 0, y: 0 }, radius = 0, rotation = 0, clickable = false) {
-    this.frames = frames;
+  constructor(graphics = [], point = { x: 0, y: 0 }, radius = 0, rotation = Math.random()*Math.PI*2) {
+    this.graphics= graphics;
     this.frame = 0;
     this.point = point;
     this.radius = radius;
-    this.rotation = rotation;
-    this.clickable = clickable;
+    this.rotation = rotation; // in radians
+    this.action = null;
   }
 
   /**
+   * Draws the entity on the specified context
    * @param {CanvasRenderingContext2D} ctx Context to draw on
-   * @param {{x, y}} root New root to draw from
+   * @param {{x, y}} camera New root to draw from
    */
-  draw(ctx, root = { x: 0, y: 0 }) {
-    this.frames[this.frame]?.draw(ctx, translate(this.point, root), this.rotation);
+  draw(ctx, camera = { x: 0, y: 0 }) {
+    this.graphics[this.frame]?.draw(ctx, translate(this.point, camera), this.rotation + (Math.PI / 2));
+    if ( this.action ){
+      const start = translate(this.point, camera);
+      const end = translate(this.action.point, camera);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.beginPath();
+      ctx.moveTo(start.x, start.y);
+      ctx.lineTo(end.x, end.y);
+      ctx.stroke();
+    }
   }
 
   /**
-   * Checks whether or not two entities overlap.
+   * Calculates the centre-centre distance between this and another entity
+   * @param {Entity} entity 
+   * @returns {number}
+   */
+  distance(entity) {
+    return ((this.point.x - entity.point.x) ** 2 + (this.point.y - entity.point.y) ** 2) ** 0.5;
+  }
+
+  /**
+   * Calculates the rotation figure needed to point this entity at the target entity.
    * @param {Entity} entity 
    */
-  collide(entity) {
-    return (((this.point.x - entity.point.x) ** 2 + (this.point.y - entity.point.y) ** 2) ** 0.5) < (this.radius + entity.radius);
+  angle(entity) {
+    // Borrowed: https://gist.github.com/conorbuck/2606166?permalink_comment_id=2344498#gistcomment-2344498
+    return Math.atan2(entity.point.y - this.point.y, entity.point.x - this.point.x);
   }
+
+  /**
+   * Determines whether or not two entities are touching.
+   * @param {Entity} entity 
+   * @returns {boolean}
+   */
+  collide(entity) {
+    return this.distance(entity) < (this.radius + entity.radius);
+  }
+
+  /**
+   * Make a working clone of this object
+   * @returns Entity
+   */
+  clone() {
+    return Object.assign(Object.create(this), this);
+  }
+
+  move(elapsed, actionEntity) {
+    this.rotation = this.angle(actionEntity);
+    this.point.x += Math.cos(this.rotation) * this.action.velocity * elapsed;
+    this.point.y += Math.sin(this.rotation) * this.action.velocity * elapsed;
+  }
+}
+
+
+/**
+ * These functions construct entities with the appropriate graphics and
+ * and values.
+ */
+
+/**
+ * @param {number} x 
+ * @param {number} y 
+ * @returns {Entity}
+ */
+export function newFrog(x, y) {
+  return new Entity([
+    new Graphic('/img/frog-sit.svg', 0.25, 135, 120),
+    new Graphic('/img/frog-jump.svg', 0.25, 93, 150)
+  ],
+  {x, y},
+  30);
+}
+
+/**
+ * @param {number} x 
+ * @param {number} y 
+ * @returns {Entity}
+ */
+export function newLily(x, y) {
+  return new Entity([
+    new Graphic('/img/lily.svg', 0.25, 170, 170)
+  ],
+  {x, y},
+  40);
+}
+
+/**
+ * @param {number} x 
+ * @param {number} y 
+ * @returns {Entity}
+ */
+export function newBug(x, y) {
+  return new Entity([
+    new Graphic('/img/bug.svg', 0.1, 189, 70)
+  ],
+  {x, y},
+  20)
+}
+
+export function newActionEntity(entity) {
+  return new Entity([], translate(entity.action.point, entity.point), 5);
 }
