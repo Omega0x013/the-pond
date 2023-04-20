@@ -4,6 +4,7 @@ const FROG_SPEED = .75;
 const BUG_MEAN = 0;
 const BUG_STDEV = Math.PI / 128;
 const BUG_VALUE = 5;
+const SCREEN_RADIUS = 354;
 
 // *** https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
 // Standard Normal variate using Box-Muller transform.
@@ -16,15 +17,31 @@ function gaussianRandom(mean = BUG_MEAN, stdev = BUG_STDEV) {
 }
 // ***
 
-function getFloat(key) {
+/**
+ * gets and parses a float point value from a localstorage index
+ * @param {string} key localStorage key to retrieve from
+ * @returns {number}
+ */
+export function getFloat(key) {
   const n = Number.parseFloat(localStorage.getItem(key));
   if (Number.isNaN(n))
     return 0;
   return n;
 }
 
+/**
+ * Updates the meter element to match the value, then passes the value through
+ * @param {string} stat 
+ * @param {number} value 
+ * @returns {number}
+ */
+function showStat(stat, value = 0) {
+  document.querySelector(`#${stat}`).value = value;
+  return value;
+}
 
-export default class World {
+
+export class World {
   /**
    * @param {HTMLCanvasElement} canvas 
    * @param {Entity} frog 
@@ -41,11 +58,11 @@ export default class World {
 
     // Build entity arrays
     this.frog = frog;
-    this.lilies = [newLily(0, 0)]; // the root lily makes sure there's always one near the player
-    this.bugs = Array.from({length: 7}, () => newBug(0, 0)); // there will always be 7 bugs on or near the screen
-
-    // Initial expand operation
-    this.expand();
+    // this.lilies = [newLily(0, 0)]; // the root lily makes sure there's always one near the player
+    this.lilies = [];
+    for (let i = -5000; i <= 5000; i+=100)
+      this.lilies.push(newLily(i, 0));
+    this.bugs = Array.from({length: 7}, () => newBug(500, 500)); // there will always be 7 bugs on or near the screen
   }
 
   /**
@@ -82,9 +99,8 @@ export default class World {
             // choose an angle from the player, place the bug at that point 300 pixels away
             // and face it at the player, then let it choose its curve on its own.
             const angle = Math.random() * Math.PI * 2;
-            const x = this.frog.point.x + Math.cos(angle) * 300;
-            const y = this.frog.point.y + Math.sin(angle) * 300;
-            console.log(x, y)
+            const x = this.frog.point.x + Math.cos(angle) * SCREEN_RADIUS;
+            const y = this.frog.point.y + Math.sin(angle) * SCREEN_RADIUS;
             bug.point = {x: x, y: y};
             bug.rotation = bug.angle(this.frog);
             break;
@@ -115,7 +131,7 @@ export default class World {
   draw() {
     // Shallow-copy the entity to use the existing collide function to detect if something is onscreen.
     const cameraEntity = this.frog.clone();
-    cameraEntity.radius = 354;
+    cameraEntity.radius = SCREEN_RADIUS;
 
     // Draw backdrop
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -131,8 +147,12 @@ export default class World {
     for (const drawable of drawables)
       drawable.draw(this.ctx, camera);
 
-    // Draw UI
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    // Update meters
+    let sum = 0;
+    sum += showStat('food', getFloat('food'));
+    sum += 100 - showStat('sleep', getFloat('sleep')); // the pet gets less happy as it gets more tired
+    sum += showStat('clean', getFloat('clean'));
+    showStat('happy', sum / 3);
   }
 
   /**
@@ -156,8 +176,18 @@ export default class World {
     if (!this.frog.action && target) {
       if (this.frog.collide(target)) return;
 
-      this.frog.action = { point: { ...target.point }, velocity: FROG_SPEED };
-      this.frog.frame = 1;
+      let tiredness = getFloat('sleep');
+      tiredness += 5;
+
+      // If tiredness is max, we can't jump anymore
+      if (tiredness >= 100) {
+        tiredness = 100;
+      } else {
+        this.frog.action = { point: { ...target.point }, velocity: FROG_SPEED };
+        this.frog.frame = 1;
+      }
+
+      localStorage.setItem('sleep', tiredness);
     }
   }
 }

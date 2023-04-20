@@ -1,4 +1,4 @@
-import World from './world.mjs';
+import {World, getFloat} from './world.mjs';
 
 /**
  * TODO:
@@ -15,14 +15,13 @@ if (!navigator.serviceWorker?.controller)
 const canvas = document.querySelector('canvas');
 const world = new World(canvas);
 
-let previous = 0;
-
 /**
  * @param {number} time Time elapsed since animation started
  */
 function update(time) {
-  const elapsed = time - previous;
-  previous = time;
+  const now = Date.now();
+  const elapsed = now - getFloat('last');
+  localStorage.setItem('last', now);
 
   world.update(elapsed);
   world.expand();
