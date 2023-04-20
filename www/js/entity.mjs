@@ -62,15 +62,6 @@ export class Entity {
    */
   draw(ctx, camera = { x: 0, y: 0 }) {
     this.graphics[this.frame]?.draw(ctx, translate(this.point, camera), this.rotation + (Math.PI / 2));
-    if ( this.action ){
-      const start = translate(this.point, camera);
-      const end = translate(this.action.point, camera);
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.beginPath();
-      ctx.moveTo(start.x, start.y);
-      ctx.lineTo(end.x, end.y);
-      ctx.stroke();
-    }
   }
 
   /**
@@ -79,7 +70,7 @@ export class Entity {
    * @returns {number}
    */
   distance(entity) {
-    return ((this.point.x - entity.point.x) ** 2 + (this.point.y - entity.point.y) ** 2) ** 0.5;
+    return Math.sqrt((this.point.x - entity.point.x) ** 2 + (this.point.y - entity.point.y) ** 2);
   }
 
   /**
@@ -108,10 +99,12 @@ export class Entity {
     return Object.assign(Object.create(this), this);
   }
 
-  move(elapsed, actionEntity) {
-    this.rotation = this.angle(actionEntity);
-    this.point.x += Math.cos(this.rotation) * this.action.velocity * elapsed;
-    this.point.y += Math.sin(this.rotation) * this.action.velocity * elapsed;
+  moveTo(elapsed, actionEntity) {
+    
+  }
+
+  moveSmooth(elapsed) {
+
   }
 }
 
@@ -162,5 +155,5 @@ export function newBug(x, y) {
 }
 
 export function newActionEntity(entity) {
-  return new Entity([], translate(entity.action.point, entity.point), 5);
+  return new Entity([], entity.action.point, 0);
 }

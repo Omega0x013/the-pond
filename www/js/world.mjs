@@ -2,18 +2,26 @@ import { translate, Entity, newFrog, newLily, newBug, newActionEntity } from './
 
 const FROG_SPEED = .75;
 const BUG_MEAN = 0;
-const BUG_STDEV = 50;
+const BUG_STDEV = Math.PI / 128;
+const BUG_VALUE = 5;
 
 // *** https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
 // Standard Normal variate using Box-Muller transform.
-function gaussianRandom(mean=BUG_MEAN, stdev=BUG_STDEV) {
+function gaussianRandom(mean = BUG_MEAN, stdev = BUG_STDEV) {
   let u = 1 - Math.random(); // Converting [0,1) to (0,1]
   let v = Math.random();
-  let z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+  let z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
   // Transform to the desired mean and standard deviation:
   return z * stdev + mean;
 }
 // ***
+
+function getFloat(key) {
+  const n = Number.parseFloat(localStorage.getItem(key));
+  if (Number.isNaN(n))
+    return 0;
+  return n;
+}
 
 
 export default class World {
@@ -33,8 +41,11 @@ export default class World {
 
     // Build entity arrays
     this.frog = frog;
-    this.lilies = [newLily(0, 0), newLily(-250, 0), newLily(-200, -100), newLily(0, -150), newLily(-100, -150), newLily(-100, 100), newLily(-300, -100)];
-    this.bugs = [newBug(-50, -50), newBug(-50, -50), newBug(80, -50)];
+    this.lilies = [newLily(0, 0)]; // the root lily makes sure there's always one near the player
+    this.bugs = Array.from({length: 7}, () => newBug(0, 0)); // there will always be 7 bugs on or near the screen
+
+    // Initial expand operation
+    this.expand();
   }
 
   /**
@@ -55,36 +66,48 @@ export default class World {
       }
 
       // move the frog
-      this.frog.move(elapsed, actionEntity);
+      this.frog.rotation = this.frog.angle(actionEntity);
+      this.frog.point.x += Math.cos(this.frog.rotation) * this.frog.action.velocity * elapsed;
+      this.frog.point.y += Math.sin(this.frog.rotation) * this.frog.action.velocity * elapsed;
     }
 
     // update all the bugs
     for (const bug of this.bugs) {
       if (bug.action) {
-        // make an entity using the bug.action property to use the distance and collide functions on
-        const actionEntity = newActionEntity(bug);
+        switch (true) {
+          // Move the bug back toward the player; if it got eaten, also add food.
+          case bug.collide(this.frog):
+            localStorage.setItem('food', getFloat('food') + BUG_VALUE);
+          case bug.distance(this.frog) > 500:
+            // choose an angle from the player, place the bug at that point 300 pixels away
+            // and face it at the player, then let it choose its curve on its own.
+            const angle = Math.random() * Math.PI * 2;
+            const x = this.frog.point.x + Math.cos(angle) * 300;
+            const y = this.frog.point.y + Math.sin(angle) * 300;
+            console.log(x, y)
+            bug.point = {x: x, y: y};
+            bug.rotation = bug.angle(this.frog);
+            break;
+        }
 
-        // snap the bug to its final position
-        if (bug.collide(actionEntity)) {
-          bug.point = bug.action.point;
+        // move the bug
+        bug.action.time -= elapsed;
+        if (bug.action.time <= 0) {
           bug.action = null;
           return;
         }
 
-        // it got eaten
-        if (bug.collide(this.frog)) console.log('nom');
+        bug.rotation += bug.action.curve;
+        bug.point.x += Math.cos(bug.rotation) * bug.action.velocity * elapsed;
+        bug.point.y += Math.sin(bug.rotation) * bug.action.velocity * elapsed;
 
-        // move the bug
-        bug.move(elapsed, actionEntity);
       } else {
+        // the bug moves along curving paths, in rad/ms at px/ms for X ms amount of time.
         bug.action = {
-          point: translate(bug.point, {x: gaussianRandom(), y: gaussianRandom()}),
-          velocity: null
+          curve: gaussianRandom(BUG_MEAN, BUG_STDEV),
+          velocity: Math.abs(gaussianRandom(0, 0.1)),
+          time: Math.abs(gaussianRandom(2000, 200))
         }
-        // To calculate the velocity of the new action, we choose how long it will take and use v = d/t
-        const actionEntity = newActionEntity(bug);
-        bug.action.velocity = bug.distance(actionEntity) / Math.abs(gaussianRandom(2000, 200));
-        // the gaussian random has a chance of making a -ve number, and we don't want to go backwards
       }
     }
   }
@@ -116,7 +139,7 @@ export default class World {
    * Grow the world around the player, if necessary.
    */
   expand() {
-    
+
   }
 
   /**
@@ -133,8 +156,7 @@ export default class World {
     if (!this.frog.action && target) {
       if (this.frog.collide(target)) return;
 
-      this.frog.action = {point: {...target.point}, velocity: FROG_SPEED};
-      console.log(this.frog.action.point);
+      this.frog.action = { point: { ...target.point }, velocity: FROG_SPEED };
       this.frog.frame = 1;
     }
   }
