@@ -1,4 +1,3 @@
-// export {Entity} from './base/Entity.mjs';
 export { Point } from './base/Point.mjs';
 export { Bug } from './Bug.mjs';
 export { Lily } from './Lily.mjs';
@@ -18,8 +17,8 @@ export function addStat(key, change) {
 
     stat += change;
 
-    if (stat < 0)
-        stat = 0;
+    if (stat < 0) stat = 0;
+    if (stat > 100) stat = 100;
 
     localStorage.setItem(key, stat);
     return stat;

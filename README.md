@@ -1,14 +1,23 @@
 # The Pond
 Own a froggy friend.
 
-This is a viewer link to the [design documents](https://docs.google.com/document/d/1GPtxC-ANjG0F4GvIZCSlwYQzbjGcaJJ58nDoN26pvvI/edit?usp=sharing) for exopet.
-
-This server will run on port 8080 by default, if you want to run it on a different port, use:
+This server will run on port 8080 by default, if you wish to run it on a different port, use:
 
 ```
 PORT=8080 npm start
 ```
 
-## Notable features to test:
+## Features
 
-1. This is an installable PWA, so try installing it and testing it with your internet off.
+Ticked features are complete, and should be tested.
+
+- [x] Move to a lily pad by clicking on it.
+- [x] Move to a lily pad using using WASD/⇧⇦⇩⇨.
+- [x] Jump through a bug to eat it.
+- [x] Jump into an item to consume it.
+- [x] Cannot jump when exhausted.
+- [ ] Infinite world.
+- [x] Pet persists when the window is closed.
+- [x] Pet stats decrease when the window is closed.
+- [x] Game is installable.
+- [x] Game works offline.

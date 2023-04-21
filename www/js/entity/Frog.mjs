@@ -1,8 +1,10 @@
 import { Entity } from "./base/Entity.mjs";
 import { Graphic } from "./base/Graphic.mjs";
-import { Point } from "./index.mjs";
+import { Point, addStat } from "./index.mjs";
 
 const FROG_SPEED = 0.75;
+const JUMP_COST = 1;
+const ITEM_VALUE = 30;
 
 export class Frog extends Entity {
   constructor() {
@@ -21,6 +23,20 @@ export class Frog extends Entity {
     if (!this.action) return;
 
     if (this.collide(this.action)) {
+      if (this.action.item) {
+        switch (this.action.item) {
+          case 1:
+            addStat('sleep', -ITEM_VALUE);
+            break;
+          case 2:
+            addStat('food', ITEM_VALUE);
+            break;
+          case 3:
+            addStat('clean', ITEM_VALUE);
+            break;
+        }
+        this.action.item = null;
+      }
       this.point = this.action.point.clone();
       this.action = null;
       this.frame = 0;
@@ -37,7 +53,12 @@ export class Frog extends Entity {
    */
   assign(entity) {
     // We're already there
-    if (this.collide(entity)) return;
+    if (!entity || this.collide(entity)) return;
+    const sleep = addStat('sleep', JUMP_COST);
+    if (sleep === 100) {
+      document.querySelector('#exhausted').dispatchEvent(new Event('open'));
+      return;
+    };
 
     this.action = entity;
     this.frame = 1;

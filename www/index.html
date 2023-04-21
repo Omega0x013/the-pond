@@ -6,7 +6,7 @@
 <link rel=manifest href=/manifest.json crossorigin=use-credentials>
 <link rel=icon href=/img/frog-sit.svg>
 <link rel=stylesheet href=/css/style.css>
-<script defer type=module src=/js/game.mjs></script>
+<script defer type=module src=/js/index.mjs></script>
 
 <canvas width=500 height=500></canvas>
 
@@ -29,11 +29,22 @@
     </figure>
 </section>
 <dialog id="new-pet">
-
+    <h2>New Pet</h2>
+    <form method="dialog">
+        <input type="text" id="petnameinput" placeholder="Pet name">
+        <input type="submit" value="Submit">
+    </form>
 </dialog>
 <dialog id="dead-pet">
-
+    <h2 id="petname">PETNAME died!</h2>
+    <p>They lived for: <span id="lived">...</span></p>
+    <form method="dialog">
+        <input type="submit" value="OK">
+    </form>
 </dialog>
 <dialog id="exhausted">
-
+    <h2 id="petname2">PETNAME is exhausted!</h2>
+    <form method="dialog">
+        <input type="submit" value="OK">
+    </form>
 </dialog>
