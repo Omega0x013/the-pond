@@ -2,7 +2,7 @@ import { World } from "./World.mjs";
 
 // Add caching service worker
 if (!navigator.serviceWorker?.controller)
-  await navigator.serviceWorker?.register('/worker.mjs', { 'scope': '/' });
+  await navigator.serviceWorker?.register('worker.mjs', { 'scope': '/' });
 
 const canvas = document.querySelector('canvas');
 const world = new World(canvas);
