@@ -4,14 +4,14 @@
   "description": "Own a froggy friend.",
   "icons": [
     {
-      "src": "/img/frog-sit.svg",
+      "src": "img/frog-sit.svg",
       "type": "image/svg+xml",
       "sizes": "any",
       "purpose": "any"
     }
   ],
   "display": "minimal-ui",
-  "start_url": "/",
-  "id": "/",
-  "scope": "/"
+  "start_url": "/the-pond/",
+  "id": "/the-pond/",
+  "scope": "/the-pond/"
 }
