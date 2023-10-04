@@ -8,10 +8,10 @@ import { Graphic } from "./base/Graphic.mjs";
 export class Lily extends Entity {
   constructor(point) {
     super(point, 40, [
-      new Graphic('/img/lily.svg', 0.25, 170, 170),
-      new Graphic('/img/pill.svg', .1, 200, 275),
-      new Graphic('/img/cookie.svg', .1, 250, 250),
-      new Graphic('/img/brush.svg', .1, 50, 275)
+      new Graphic('img/lily.svg', 0.25, 170, 170),
+      new Graphic('img/pill.svg', .1, 200, 275),
+      new Graphic('img/cookie.svg', .1, 250, 250),
+      new Graphic('img/brush.svg', .1, 50, 275)
     ]);
     this.item = Math.floor(Math.random()*50) ? null : Math.floor(Math.random()*3)+1;
   }

@@ -23,7 +23,7 @@ function gaussianRandom(mean, stdev) {
 export class Bug extends Entity {
   constructor() {
     super(new Point(1000, 1000), 20, [
-      new Graphic('/img/bug.svg', 0.1, 189, 70)
+      new Graphic('img/bug.svg', 0.1, 189, 70)
     ]);
 
     this.action = null;

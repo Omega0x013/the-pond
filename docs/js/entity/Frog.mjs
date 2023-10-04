@@ -9,8 +9,8 @@ const ITEM_VALUE = 30;
 export class Frog extends Entity {
   constructor() {
     super(new Point(0, 0), 30, [
-      new Graphic('/img/frog-sit.svg', 0.25, 135, 120),
-      new Graphic('/img/frog-jump.svg', 0.25, 93, 150)
+      new Graphic('img/frog-sit.svg', 0.25, 135, 120),
+      new Graphic('img/frog-jump.svg', 0.25, 93, 150)
     ]);
   }
 
