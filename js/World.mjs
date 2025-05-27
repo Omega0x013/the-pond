@@ -1,5 +1,4 @@
 import { Lily, Bug, Frog, Point, addStat } from './entity/index.mjs';
-import { NewPetDialog, DeadPetDialog, ExhaustedDialog } from './dialog/index.mjs';
 
 const CLICK_RADIUS = 10;
 const KEY_RANGE = 300;
@@ -29,13 +28,6 @@ export class World {
     this.context.fillStyle = 'skyblue';
     this.context.strokeStyle = 'white';
 
-    this.newPet = new NewPetDialog();
-    this.deadPet = new DeadPetDialog();
-    this.exhausted = new ExhaustedDialog();
-
-    if (!localStorage.getItem('born'))
-      this.newPet.open();
-
     this.frog = new Frog();
     // this.lilies = [new Lily(new Point(0, 0))];
     this.lilies = [];
@@ -57,7 +49,6 @@ export class World {
    * @param {number} elapsed ms elapsed since last call
    */
   update(elapsed) {
-    if (this.deadPet.dialog.open || this.newPet.dialog.open || this.exhausted.dialog.open) return;
     // Decay stats
     // const food = updateStat('food', elapsed);
     // const clean = updateStat('clean', elapsed);
@@ -106,7 +97,6 @@ export class World {
    * @param {Event} event onclick event
    */
   click(event) {
-    if (this.deadPet.dialog.open || this.newPet.dialog.open || this.exhausted.dialog.open) return;
     if (this.frog.action) return;
 
     // Work out where the click is in the game world
@@ -138,7 +128,6 @@ export class World {
    * @param {Event} event keydown event
    */
   keydown(event) {
-    if (this.deadPet.dialog.open || this.newPet.dialog.open || this.exhausted.dialog.open) return;
     if (this.frog.action) return;
     if (event.isComposing || event.keyCode === 229) return;
 
