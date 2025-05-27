@@ -14,6 +14,21 @@ export class Frog extends Entity {
     ]);
   }
 
+  eat(entity) {
+    switch (entity.item) {
+      case 1:
+        addStat('sleep', -ITEM_VALUE);
+        break;
+      case 2:
+        addStat('food', ITEM_VALUE);
+        break;
+      case 3:
+        addStat('clean', ITEM_VALUE);
+        break;
+    }
+    this.action.target.item = null;
+  }
+
   /**
    * The frog moves directly toward a targeted entity, in this case a lily pad.
    * Once within reach it will snap directly to its destination, to make sure it always shows up at
@@ -22,29 +37,22 @@ export class Frog extends Entity {
   move(elapsed) {
     if (!this.action) return;
 
-    if (this.collide(this.action)) {
-      if (this.action.item) {
-        switch (this.action.item) {
-          case 1:
-            addStat('sleep', -ITEM_VALUE);
-            break;
-          case 2:
-            addStat('food', ITEM_VALUE);
-            break;
-          case 3:
-            addStat('clean', ITEM_VALUE);
-            break;
-        }
-        this.action.item = null;
+    this.action.duration -= elapsed;
+
+    // Finish action and snap to point
+    if (this.action.duration <= 0) {
+      this.point = this.action.target.point.clone();
+      if (this.action.target.item) {
+        this.eat(this.action.target);
       }
-      this.point = this.action.point.clone();
       this.action = null;
       this.frame = 0;
-    } else {
-      this.orientation = this.point.angle(this.action.point);
+      return;
+    }
+
+    this.orientation = this.action.orientation;
       this.point.x += Math.cos(this.orientation) * elapsed * FROG_SPEED;
       this.point.y += Math.sin(this.orientation) * elapsed * FROG_SPEED;
-    }
   }
 
   /**
@@ -60,7 +68,13 @@ export class Frog extends Entity {
       return;
     };
 
-    this.action = entity;
+    this.action = {
+      orientation: this.point.angle(entity.point),
+      target: entity,
+      duration: this.point.distance(entity.point) / FROG_SPEED,
+    }
+
+    // this.action = entity;
     this.frame = 1;
   }
 }
