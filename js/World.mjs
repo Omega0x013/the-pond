@@ -65,13 +65,6 @@ export class World {
       }
     }
 
-    // Eat flies
-    if (this.frog.action) {
-      for (const fly of this.flies) {
-
-      }
-    }
-
     this.center = new Point(this.canvas.width / 2, this.canvas.height / 2);
 
     // Draw - we only want to draw things that are visible onscreen, as the rest won't be visible.
