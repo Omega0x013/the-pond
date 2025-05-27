@@ -14,9 +14,11 @@ const FULL_TURN = Math.PI * 2;
 const QUARTER_TURN = FULL_TURN / 4;
 
 function updateStat(key, elapsed) {
-  const stat = addStat(key, -DECAY_RATE * elapsed);
-  document.querySelector(`#${key}`).value = stat;
-  return stat;
+  console.warn("updateStat is temporarily disabled.");
+  return;
+  // const stat = addStat(key, -DECAY_RATE * elapsed);
+  // document.querySelector(`#${key}`).value = stat;
+  // return stat;
 }
 
 export class World {
@@ -55,15 +57,15 @@ export class World {
   update(elapsed) {
     if (this.deadPet.dialog.open || this.newPet.dialog.open || this.exhausted.dialog.open) return;
     // Decay stats
-    const food = updateStat('food', elapsed);
-    const clean = updateStat('clean', elapsed);
-    const sleep = updateStat('sleep', elapsed);
+    // const food = updateStat('food', elapsed);
+    // const clean = updateStat('clean', elapsed);
+    // const sleep = updateStat('sleep', elapsed);
 
-    const happy = (food + (100 - sleep) + clean) / 3;
-    document.querySelector('#happy').value = happy;
+    // const happy = (food + (100 - sleep) + clean) / 3;
+    // document.querySelector('#happy').value = happy;
 
-    if (food === 0 || clean === 0)
-      document.querySelector('#dead-pet').dispatchEvent(new Event('open'));
+    // if (food === 0 || clean === 0)
+    //   document.querySelector('#dead-pet').dispatchEvent(new Event('open'));
 
 
     // Update game objects

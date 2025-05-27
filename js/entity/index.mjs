@@ -10,16 +10,18 @@ export { Frog } from './Frog.mjs';
  * @returns number
  */
 export function addStat(key, change) {
-    let stat = +localStorage.getItem(key);
+    console.warn("addStat is temporarily disabled.");
+    return;
+    // let stat = +localStorage.getItem(key);
 
-    if (Number.isNaN(stat))
-        stat = 0;
+    // if (Number.isNaN(stat))
+    //     stat = 0;
 
-    stat += change;
+    // stat += change;
 
-    if (stat < 0) stat = 0;
-    if (stat > 100) stat = 100;
+    // if (stat < 0) stat = 0;
+    // if (stat > 100) stat = 100;
 
-    localStorage.setItem(key, stat);
-    return stat;
+    // localStorage.setItem(key, stat);
+    // return stat;
 }
