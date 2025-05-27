@@ -55,16 +55,24 @@ export class World {
     for (const fly of this.flies) {
       fly.move(elapsed);
 
-      switch (true) {
-        case fly.collide(this.frog):
-          // addStat('food', BUG_FOOD_VALUE);
-        case fly.point.distance(this.frog.point) > RENDER_LIMIT:
-          fly.reposition(this.frog.point);
-          break;
+      // Eat the fly while moving.
+      if (this.frog.action && this.frog.collide(fly)) {
+        fly.reposition(this.frog.point);
+      }
+
+      if (fly.point.distance(this.frog.point) > RENDER_LIMIT) {
+        fly.reposition(this.frog.point);
       }
     }
 
-    this.center = new Point(this.canvas.width/2, this.canvas.height/2);
+    // Eat flies
+    if (this.frog.action) {
+      for (const fly of this.flies) {
+
+      }
+    }
+
+    this.center = new Point(this.canvas.width / 2, this.canvas.height / 2);
 
     // Draw - we only want to draw things that are visible onscreen, as the rest won't be visible.
     const camera = this.frog.point.translate(this.center);
