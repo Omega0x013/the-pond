@@ -1,4 +1,7 @@
-import { Lily, Fly, Frog, Point, addStat } from './entity/index.mjs';
+import { Lily } from './entity/Lily.mjs';
+import { Fly } from './entity/Fly.mjs';
+import { Point } from './entity/base/Point.mjs';
+import { Frog } from './entity/Frog.mjs';
 
 const CLICK_RADIUS = 10;
 const KEY_RANGE = 300;
