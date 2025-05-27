@@ -62,11 +62,11 @@ export class Frog extends Entity {
   assign(entity) {
     // We're already there
     if (!entity || this.collide(entity)) return;
-    const sleep = addStat('sleep', JUMP_COST);
-    if (sleep === 100) {
-      document.querySelector('#exhausted').dispatchEvent(new Event('open'));
-      return;
-    };
+    // const sleep = addStat('sleep', JUMP_COST);
+    // if (sleep === 100) {
+    //   document.querySelector('#exhausted').dispatchEvent(new Event('open'));
+    //   return;
+    // };
 
     this.action = {
       orientation: this.point.angle(entity.point),
