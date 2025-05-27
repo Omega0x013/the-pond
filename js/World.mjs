@@ -49,35 +49,41 @@ export class World {
    * @param {number} elapsed ms elapsed since last call
    */
   update(elapsed) {
-    // Update game objects
-    this.frog.move(elapsed);
+    // Get camera position in-world.
+    this.center = new Point(this.canvas.width / 2, this.canvas.height / 2);
+    this.camera = this.frog.point.translate(this.center);
 
+    // Wipe screen.
+    this.context.setTransform(1, 0, 0, 1, 0, 0);
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    // Draw lilypads.
+    for (const lily of this.lilies) {
+      if (this.frog.point.distance(lily.point) > RENDER_LIMIT) {
+        continue;
+      }
+
+      lily.draw(this.context, this.camera);
+    }
+
+    // Move and draw frog.
+    this.frog.move(elapsed);
+    this.frog.draw(this.context, this.camera);
+
+    // Move and draw flies.
     for (const fly of this.flies) {
       fly.move(elapsed);
 
-      // Eat the fly while moving.
       if (this.frog.action && this.frog.collide(fly)) {
         fly.reposition(this.frog.point);
       }
 
-      if (fly.point.distance(this.frog.point) > RENDER_LIMIT) {
+      if (this.frog.point.distance(fly.point) > RENDER_LIMIT) {
         fly.reposition(this.frog.point);
       }
+
+      fly.draw(this.context, this.camera)
     }
-
-    this.center = new Point(this.canvas.width / 2, this.canvas.height / 2);
-
-    // Draw - we only want to draw things that are visible onscreen, as the rest won't be visible.
-    const camera = this.frog.point.translate(this.center);
-    this.context.setTransform(1, 0, 0, 1, 0, 0);
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    /** @type {Entity[]} */
-    let drawables = [].concat(this.lilies, [this.frog], this.flies);
-    drawables = drawables.filter(entity => entity.point.distance(this.frog.point) < RENDER_LIMIT);
-
-    for (const drawable of drawables)
-      drawable.draw(this.context, camera);
   }
 
 
