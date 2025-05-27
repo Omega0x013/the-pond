@@ -2,12 +2,12 @@ import { Entity } from "./base/Entity.mjs";
 import { Graphic } from "./base/Graphic.mjs";
 import { Point } from "./index.mjs";
 
-const BUG_CURVE_MEAN = 0; // rad/ms
-const BUG_CURVE_STDEV = Math.PI / 128;
-const BUG_SPEED_MEAN = 0; // pix/ms
-const BUG_SPEED_STDEV = 0.1;
-const BUG_TIME_MEAN = 2000; // ms
-const BUG_TIME_STDEV = 200;
+const FLY_CURVE_MEAN = 0; // rad/ms
+const FLY_CURVE_STDEV = Math.PI / 128;
+const FLY_SPEED_MEAN = 0; // pix/ms
+const FLY_SPEED_STDEV = 0.1;
+const FLY_TIME_MEAN = 2000; // ms
+const FLY_TIME_STDEV = 200;
 
 // *** https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
 // Standard Normal variate using Box-Muller transform.
@@ -20,17 +20,17 @@ function gaussianRandom(mean, stdev) {
 }
 // ***
 
-export class Bug extends Entity {
+export class Fly extends Entity {
   constructor() {
     super(new Point(1000, 1000), 20, [
-      new Graphic('img/bug.svg', 0.1, 189, 70)
+      new Graphic('img/fly.svg', 0.1, 189, 70)
     ]);
 
     this.action = null;
   }
 
   /**
-   * Bugs move in arcs, turning at rad/ms, moving at pix/ms, for ms amount of time
+   * Flies move in arcs, turning at rad/ms, moving at pix/ms, for ms amount of time
    * @param {number} elapsed ms since last update
    */
   move(elapsed) {
@@ -45,16 +45,16 @@ export class Bug extends Entity {
       }
     } else {
       this.action = {
-        curve: gaussianRandom(BUG_CURVE_MEAN, BUG_CURVE_STDEV),
-        speed: Math.abs(gaussianRandom(BUG_SPEED_MEAN, BUG_SPEED_STDEV)),
-        time: gaussianRandom(BUG_TIME_MEAN, BUG_TIME_STDEV)
+        curve: gaussianRandom(FLY_CURVE_MEAN, FLY_CURVE_STDEV),
+        speed: Math.abs(gaussianRandom(FLY_SPEED_MEAN, FLY_SPEED_STDEV)),
+        time: gaussianRandom(FLY_TIME_MEAN, FLY_TIME_STDEV)
       }
     }
   }
 
   /**
    * Move to a point on a circle just offscreen from the point, face toward
-   * the point, then let the bug decide for itself its next action.
+   * the point, then let the fly decide for itself its next action.
    * @param {Point} point point from which to reposition
    */
   reposition(point) {

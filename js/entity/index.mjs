@@ -1,5 +1,5 @@
 export { Point } from './base/Point.mjs';
-export { Bug } from './Bug.mjs';
+export { Fly } from './Fly.mjs';
 export { Lily } from './Lily.mjs';
 export { Frog } from './Frog.mjs';
 

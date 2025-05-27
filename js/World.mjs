@@ -1,9 +1,9 @@
-import { Lily, Bug, Frog, Point, addStat } from './entity/index.mjs';
+import { Lily, Fly, Frog, Point, addStat } from './entity/index.mjs';
 
 const CLICK_RADIUS = 10;
 const KEY_RANGE = 300;
 
-const BUG_FOOD_VALUE = 4;
+const FLY_FOOD_VALUE = 4;
 const DECAY_RATE = 0.05 / 1000;
 
 const RENDER_LIMIT = 500;
@@ -34,7 +34,7 @@ export class World {
     for (let y = -3000; y <= 3000; y += 150)
       for (let x = -3000; x <= 3000; x += 150)
         this.lilies.push(new Lily(new Point(x, y)));
-    this.bugs = Array.from({ length: 3 }, () => new Bug());
+    this.flies = Array.from({ length: 3 }, () => new Fly());
 
     canvas.addEventListener('click', this.click.bind(this));
     document.addEventListener('keydown', this.keydown.bind(this));
@@ -49,29 +49,17 @@ export class World {
    * @param {number} elapsed ms elapsed since last call
    */
   update(elapsed) {
-    // Decay stats
-    // const food = updateStat('food', elapsed);
-    // const clean = updateStat('clean', elapsed);
-    // const sleep = updateStat('sleep', elapsed);
-
-    // const happy = (food + (100 - sleep) + clean) / 3;
-    // document.querySelector('#happy').value = happy;
-
-    // if (food === 0 || clean === 0)
-    //   document.querySelector('#dead-pet').dispatchEvent(new Event('open'));
-
-
     // Update game objects
     this.frog.move(elapsed);
 
-    for (const bug of this.bugs) {
-      bug.move(elapsed);
+    for (const fly of this.flies) {
+      fly.move(elapsed);
 
       switch (true) {
-        case bug.collide(this.frog):
-          addStat('food', BUG_FOOD_VALUE);
-        case bug.point.distance(this.frog.point) > RENDER_LIMIT:
-          bug.reposition(this.frog.point);
+        case fly.collide(this.frog):
+          // addStat('food', BUG_FOOD_VALUE);
+        case fly.point.distance(this.frog.point) > RENDER_LIMIT:
+          fly.reposition(this.frog.point);
           break;
       }
     }
@@ -84,7 +72,7 @@ export class World {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     /** @type {Entity[]} */
-    let drawables = [].concat(this.lilies, [this.frog], this.bugs);
+    let drawables = [].concat(this.lilies, [this.frog], this.flies);
     drawables = drawables.filter(entity => entity.point.distance(this.frog.point) < RENDER_LIMIT);
 
     for (const drawable of drawables)

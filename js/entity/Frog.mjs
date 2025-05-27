@@ -15,17 +15,17 @@ export class Frog extends Entity {
   }
 
   eat(entity) {
-    switch (entity.item) {
-      case 1:
-        addStat('sleep', -ITEM_VALUE);
-        break;
-      case 2:
-        addStat('food', ITEM_VALUE);
-        break;
-      case 3:
-        addStat('clean', ITEM_VALUE);
-        break;
-    }
+    // switch (entity.item) {
+    //   case 1:
+    //     addStat('sleep', -ITEM_VALUE);
+    //     break;
+    //   case 2:
+    //     addStat('food', ITEM_VALUE);
+    //     break;
+    //   case 3:
+    //     addStat('clean', ITEM_VALUE);
+    //     break;
+    // }
     this.action.target.item = null;
   }
 
