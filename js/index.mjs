@@ -5,14 +5,16 @@ if (!navigator.serviceWorker?.controller)
   await navigator.serviceWorker?.register('worker.mjs', { 'scope': '/the-pond/' });
 
 const canvas = document.querySelector('canvas');
-const world = new World(canvas);
 
-// Avoid extra allocations
-let now, elapsed;
+resize();
+window.addEventListener('resize', resize);
+
+const world = new World(canvas);
+requestAnimationFrame(update);
 
 function update(_time) {
-  now = Date.now();
-  elapsed = now - +localStorage.getItem('last');
+  const now = performance.now();
+  const elapsed = now - +localStorage.getItem('last');
   localStorage.setItem('last', now);
 
   world.update(elapsed);
@@ -20,4 +22,8 @@ function update(_time) {
   requestAnimationFrame(update);
 }
 
-requestAnimationFrame(update);
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}

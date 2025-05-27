@@ -1,19 +1,19 @@
 body {
-    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    /* padding: 0;
     border: 0;
     margin: 0;
     display: flex;
     flex-flow: column nowrap;
     align-items: center;
-    justify-content: center;
+    justify-content: center; */
+    background-color: skyblue;
 }
 
 canvas {
-    padding: 0;
-    border: 1px solid black;
-    margin: 1rem;
-    overscroll-behavior-y: none;
-    overscroll-behavior-x: none;
+    display: block;
+    background-color: transparent;
 }
 
 section {

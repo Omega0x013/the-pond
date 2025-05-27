@@ -1,8 +1,6 @@
 import { Lily, Bug, Frog, Point, addStat } from './entity/index.mjs';
 import { NewPetDialog, DeadPetDialog, ExhaustedDialog } from './dialog/index.mjs';
 
-const CAMERA_OFF = new Point(250, 250);
-
 const CLICK_RADIUS = 10;
 const KEY_RANGE = 300;
 
@@ -26,6 +24,7 @@ export class World {
    * @param {HTMLCanvasElement} canvas Canvas to bind the World to
    */
   constructor(canvas) {
+    this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.context.fillStyle = 'skyblue';
     this.context.strokeStyle = 'white';
@@ -47,6 +46,9 @@ export class World {
 
     canvas.addEventListener('click', this.click.bind(this));
     document.addEventListener('keydown', this.keydown.bind(this));
+
+    // Run the initial draw.
+    this.update(0);
   }
 
 
@@ -83,11 +85,12 @@ export class World {
       }
     }
 
+    this.center = new Point(this.canvas.width/2, this.canvas.height/2);
 
     // Draw - we only want to draw things that are visible onscreen, as the rest won't be visible.
-    const camera = this.frog.point.translate(CAMERA_OFF);
+    const camera = this.frog.point.translate(this.center);
     this.context.setTransform(1, 0, 0, 1, 0, 0);
-    this.context.fillRect(0, 0, 500, 500);
+    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
     /** @type {Entity[]} */
     let drawables = [].concat(this.lilies, [this.frog], this.bugs);
@@ -110,7 +113,12 @@ export class World {
     const location = new Point(
       event.clientX - event.target.offsetLeft,
       event.clientY - event.target.offsetTop
-    ).translate(CAMERA_OFF.translate(this.frog.point));
+    ).translate(this.center.translate(this.frog.point));
+
+    // Work out if the click is onscreen
+    if (location.distance(this.frog.point) > RENDER_LIMIT) {
+      return;
+    }
 
     // Find every lily it intersects with, then pick the closest
     const target = this.lilies.filter(
