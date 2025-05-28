@@ -1,6 +1,5 @@
 import { Point } from "./Point.mjs";
 
-const QUARTER_TURN = Math.PI / 2;
 
 export class Graphic {
   constructor(path, scale, cx, cy) {

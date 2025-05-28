@@ -1,155 +1,338 @@
-import { Lily } from './entity/Lily.mjs';
-import { Fly } from './entity/Fly.mjs';
-import { Point } from './entity/base/Point.mjs';
-import { Frog } from './entity/Frog.mjs';
+import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Random, RandomBearing, Move } from './entity.mjs';
 
+const RENDER_RANGE = 600;
+
+const SEARCH_RANGE = 300;
 const CLICK_RADIUS = 10;
-const KEY_RANGE = 300;
 
-const FLY_FOOD_VALUE = 4;
-const DECAY_RATE = 0.05 / 1000;
+const LILY_MIN_SIZE = 35;
+const LILY_MAX_SIZE = 55;
+const ITEM_SPAWN_RATE = 0.02;
 
-const RENDER_LIMIT = 500;
+const FROG_SPEED = 0.75;
+
+const FLY_ORBIT = 400;
+const FLY_DURATION_MEAN = 2000;
+const FLY_DURATION_STDEV = 200;
+const FLY_ROTATION_MEAN = 0;
+const FLY_ROTATION_STDEV = Math.PI / 2048;
+const FLY_SPEED_MEAN = 0.1; // uses Math.abs
+const FLY_SPEED_STDEV = 0.1;
+
 const FULL_TURN = Math.PI * 2;
-const QUARTER_TURN = FULL_TURN / 4;
+const OVERLAY_DURATION = 1500;
 
-// Add caching service worker
-if (navigator.serviceWorker && navigator.serviceWorker?.controller)
-  await navigator.serviceWorker?.register('worker.mjs', { 'scope': '/the-pond/' });
+// Start the service worker.
+if (navigator.serviceWorker && !navigator.serviceWorker.controller) {
+  await navigator.serviceWorker.register('worker.mjs', { 'scope': '/the-pond/' })
+}
 
 const canvas = document.querySelector('canvas');
 const context = canvas.getContext('2d');
 
-const frog = new Frog();
+// Create the frog.
+const frog = {
+  x: 0,
+  y: 0,
+  radius: 30,
+  facing: RandomBearing(),
+  action: null,
+  layers: [true, false]
+};
+
+// Create initial lily pads.
 const lilies = [];
+for (let y = -2000; y <= 2000; y += 200)
+  for (let x = -2000; x <= 2000; x += 200) {
+    const lily = {
+      x: x,
+      y: y,
+      radius: 40,
+      facing: RandomBearing(),
+      action: null,
+      item: Math.random() < ITEM_SPAWN_RATE && Math.floor(Math.random() * 3) + 1,
+      layers: [true, false, false, false]
+    };
+    if (lily.item > 0) {
+      lily.layers[lily.item] = true;
+    }
+    lilies.push(lily);
+  }
 
-for (let y = -3000; y <= 3000; y += 150)
-  for (let x = -3000; x <= 3000; x += 150)
-    lilies.push(new Lily(new Point(x, y)));
+// Create flies.
+const flies = [];
+for (let i = 0; i < 3; i++) {
+  const fly = {
+    radius: 20,
+    action: null,
+    layers: [true]
+  };
+  // Position the fly around the frog.
+  repositionFly(fly, frog);
+  flies.push(fly);
+}
 
-const flies = Array.from({ length: 3 }, () => new Fly());
-
-// Listen for screen size changes
+// Add event listeners
 resize();
 window.addEventListener('resize', resize);
 
-// Listen for mouse clicks and touchscreen taps
-window.addEventListener('click', click)
-
-// Listen for keyboard input
+// TODO: click
+window.addEventListener('click', click);
+// TODO: keydown
 document.addEventListener('keydown', keydown);
 
-// Start animation loop
-let previousTimestamp = performance.now();
-requestAnimationFrame(update);
+// Start main loop
 
-let center, camera;
+/**
+ * @type {number}
+ */
+let previousTimestamp;
+
+/**
+ * @type {{x: number, y: number}}
+ */
+let camera;
+
+/**
+ * The duration for which the overlay will continue to be shown onscreen.
+ * @type {number}
+ */
+let overlayCircle;
+
+/**
+ * Main loop.
+ * @param {DOMHighResTimeStamp} timestamp 
+ */
 function update(timestamp) {
-  // Calculate elapsed ms.
+  // Calculate elapsed milliseconds.
   const elapsed = timestamp - previousTimestamp;
   previousTimestamp = timestamp;
 
-  // Wipe screen.
-  context.setTransform(1, 0, 0, 1, 0, 0);
+  // Clear previous scene.
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Gen in-world camera position.
-  center = new Point(canvas.width / 2, canvas.height / 2);
-  camera = frog.point.translate(center);
+  // TODO: Calculate camera position.
+  camera = { x: frog.x - canvas.width / 2, y: frog.y - canvas.height / 2 }
 
-  // Draw lilypads.
+  // Move and draw lilypads.
   for (const lily of lilies) {
-    if (frog.point.distance(lily.point) > RENDER_LIMIT) {
+    Move(lily, elapsed);
+
+    const distance = Distance(frog, lily);
+
+    if (distance > RENDER_RANGE) {
       continue;
     }
 
-    lily.draw(context, camera);
+    if (distance < frog.radius + lily.radius) {
+      lily.item = 0;
+      lily.layers = [true, false, false, false];
+    }
+
+    Draw(context, camera, lily, LILY_LAYERS);
   }
 
-  // Move and draw frog;
-  frog.move(elapsed);
-  frog.draw(context, camera);
+  // Move and draw frog.
+  Move(frog, elapsed);
+  if (frog.action === null) {
+    frog.layers = [true, false];
+  }
+  Draw(context, camera, frog, FROG_LAYERS);
 
-  // Move and draw flies;
+  // Move and draw flies.
   for (const fly of flies) {
-    fly.move(elapsed);
+    Move(fly, elapsed);
 
-    if (frog.action && frog.collide(fly)) {
-      fly.reposition(frog.point);
+    if (fly.action === null) {
+      fly.action = {
+        duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+        rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+        speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+      };
     }
 
-    if (frog.point.distance(fly.point) > RENDER_LIMIT) {
-      fly.reposition(frog.point);
+    if (frog.action !== null && Distance(frog, fly) < frog.radius + fly.radius) {
+      repositionFly(fly, frog);
     }
 
-    fly.draw(context, camera)
+    if (Distance(frog, fly) > RENDER_RANGE) {
+      repositionFly(fly, frog);
+    }
+
+    Draw(context, camera, fly, FLY_LAYERS);
   }
 
+  // Draw overlay circle.
+  if (overlayCircle > 0) {
+    overlayCircle -= elapsed;
+    context.save();
+    // Set up stroke effects for the overlay.
+    context.globalAlpha = 0.5;
+    context.strokeStyle = "grey";
+    context.lineWidth = 2;
+    context.setLineDash([5, 5]);
+    context.beginPath();
+    context.arc(canvas.width / 2, canvas.height / 2, SEARCH_RANGE, 0, FULL_TURN);
+    context.stroke();
+    context.restore();
+  }
+
+  // Loop.
   requestAnimationFrame(update);
 }
 
+requestAnimationFrame(update);
+
+/**
+ * Place the fly on the edge of the frog's orbit, facing inward.
+ * @param {Object} fly 
+ * @param {Object} frog 
+ */
+function repositionFly(fly, frog) {
+  const { x, y } = OrbitPosition(frog, FLY_ORBIT, RandomBearing());
+  fly.x = x;
+  fly.y = y;
+  fly.facing = Bearing(fly, frog);
+}
+
+function assignFrog(frog, target) {
+  const distance = Distance(frog, target);
+  if (distance < target.radius) {
+    return;
+  }
+
+  if (distance > SEARCH_RANGE) {
+    overlayCircle = OVERLAY_DURATION;
+    return;
+  }
+
+  frog.facing = Bearing(frog, target);
+  frog.action = {
+    duration: distance / FROG_SPEED,
+    rotation: 0,
+    speed: FROG_SPEED
+  }
+  frog.layers = [false, true];
+}
+
+// Event listener functions.
+
+/**
+ * Respond to resize events
+ * @param {Event} _event 
+ */
 function resize(_event) {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 }
 
+/**
+ * Respond to clicks
+ * @param {MouseEvent} event 
+ */
 function click(event) {
-  // If the frog is already jumping, ignore.
-  if (frog.action) { return; }
+  if (frog.action !== null) {
+    return;
+  }
 
-  let location = new Point(event.clientX, event.clientY).translate(center.translate(frog.point));
+  const clickEntity = {
+    x: event.clientX + camera.x,
+    y: event.clientY + camera.y,
+  };
 
-  if (location.distance(frog.point) > RENDER_LIMIT) { return; }
+  // const target = lilies.find(lily => Collides(clickEntity, lily));
+  let target;
+  for (const lily of lilies) {
+    if (Distance(clickEntity, lily) < CLICK_RADIUS + lily.radius) {
+      target = lily;
+      break;
+    }
+  }
 
-  const target = lilies.filter(
-    lily => lily.point.distance(location) <= lily.radius + CLICK_RADIUS
-  ).sort(
-    (a, b) => a.point.distance(location) - b.point.distance(location)
-  ).at(-1);
+  if (!target) {
+    return;
+  }
 
-  frog.assign(target);
+  assignFrog(frog, target);
 }
 
+/**
+ * Respond to keyboard input
+ * @param {KeyboardEvent} event 
+ */
 function keydown(event) {
-  if (frog.action) return;
-    if (event.isComposing || event.keyCode === 229) return;
+  if (frog.action || event.isComposing) {
+    return
+  };
 
-    let scanAxis;
+  let scanAxis;
 
-    switch (event.code) {
-      case "KeyD":
-      case "ArrowRight":
-        scanAxis = 0;
-        break;
-      case "KeyS":
-      case "ArrowDown":
-        scanAxis = 1;
-        break;
-      case "KeyA":
-      case "ArrowLeft":
-        scanAxis = 2;
-        break;
-      case "KeyW":
-      case "ArrowUp":
-        scanAxis = 3;
-        break;
-      default:
-        return;
+  switch (event.code) {
+    case "KeyD":
+    case "ArrowRight":
+      scanAxis = 0 * Math.PI; // Right
+      break;
+    case "KeyS":
+    case "ArrowDown":
+      scanAxis = 0.5 * Math.PI; // Down
+      break;
+    case "KeyA":
+    case "ArrowLeft":
+      scanAxis = Math.PI; // Left (equivalent to -1 * Math.PI)
+      break;
+    case "KeyW":
+    case "ArrowUp":
+      scanAxis = -0.5 * Math.PI; // Up
+      break;
+
+    // Diagonal Movement
+    case "KeyW" && "KeyD": // Up-Right
+      scanAxis = -0.25 * Math.PI;
+      break;
+    case "KeyW" && "KeyA": // Up-Left
+      scanAxis = -0.75 * Math.PI;
+      break;
+    case "KeyS" && "KeyD": // Down-Right
+      scanAxis = 0.25 * Math.PI;
+      break;
+    case "KeyS" && "KeyA": // Down-Left
+      scanAxis = 0.75 * Math.PI;
+      break;
+
+    default:
+      return;
+  }
+
+
+  let target;
+
+  let min = Infinity
+  for (const lily of lilies) {
+    // Filter out lilies that are too distant or in collision.
+    const distance = Distance(frog, lily)
+    if (distance > SEARCH_RANGE || distance < frog.radius + lily.radius) {
+      continue;
     }
 
-    scanAxis *= QUARTER_TURN;
-    scanAxis %= FULL_TURN;
+    // Find the absolute angle
+    const difference = scanAxis - Bearing(frog, lily);
+    const angle = Math.abs(Math.atan2(Math.sin(difference), Math.cos(difference)));
 
-    /**
-     * Find all targets within range, then pick the one closest to the desired axis.
-     */
-    const target = lilies.filter(
-      lily => !frog.collide(lily) && frog.point.distance(lily.point) < KEY_RANGE
-    ).sort(
-      (a, b) =>
-        Math.abs(scanAxis - frog.point.angle(a.point)) % FULL_TURN
-        - Math.abs(scanAxis - frog.point.angle(b.point)) % FULL_TURN
-    ).at(0);
+    // 
+    if (angle > .125) {
+      continue;
+    }
 
-    frog.assign(target);
+    if (angle < min) {
+      target = lily;
+      min = angle;
+    }
+  }
+
+  if (!target) {
+    overlayCircle = OVERLAY_DURATION;
+    return;
+  }
+
+  assignFrog(frog, target);
 }

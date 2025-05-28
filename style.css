@@ -28,3 +28,7 @@ figure {
     flex-flow: column nowrap;
     align-items: start;
 }
+
+img {
+    display: none;
+}
