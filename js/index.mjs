@@ -165,16 +165,7 @@ function update(timestamp) {
   // Draw overlay circle.
   if (overlayCircle > 0) {
     overlayCircle -= elapsed;
-    context.save();
-    // Set up stroke effects for the overlay.
-    context.globalAlpha = 0.5;
-    context.strokeStyle = "grey";
-    context.lineWidth = 2;
-    context.setLineDash([5, 5]);
-    context.beginPath();
-    context.arc(canvas.width / 2, canvas.height / 2, SEARCH_RANGE, 0, FULL_TURN);
-    context.stroke();
-    context.restore();
+    drawDashedCircle(context, canvas.width / 2, canvas.height / 2, SEARCH_RANGE);
   }
 
   // Loop.
@@ -195,9 +186,15 @@ function repositionFly(fly, frog) {
   fly.facing = Bearing(fly, frog);
 }
 
-function assignFrog(frog, target) {
-  const distance = Distance(frog, target);
-  if (distance < target.radius) {
+/**
+ * Set `a`'s action to move toward `b` at the given speed.
+ * @param {Entity} a 
+ * @param {Entity} b 
+ * @param {number} speed
+ */
+function moveToward(a, b, speed) {
+  const distance = Distance(a, b);
+  if (distance < b.radius) {
     return;
   }
 
@@ -206,13 +203,32 @@ function assignFrog(frog, target) {
     return;
   }
 
-  frog.facing = Bearing(frog, target);
-  frog.action = {
-    duration: distance / FROG_SPEED,
+  a.facing = Bearing(a, b);
+  a.action = {
+    duration: distance / speed,
     rotation: 0,
-    speed: FROG_SPEED
+    speed: speed
   }
-  frog.layers = [false, true];
+  a.layers = [false, true];
+}
+
+/**
+ * Draw a dashed circle centered on (x,y) with a given radius onto the provided context.
+ * @param {CanvasRenderingContext2D} context 
+ * @param {number} x 
+ * @param {number} y 
+ * @param {number} radius 
+ */
+function drawDashedCircle(context, x, y, radius) {
+  context.save();
+  context.globalAlpha = 0.5;
+  context.strokeStyle = "grey";
+  context.lineWidth = 2;
+  context.setLineDash([5, 5]);
+  context.beginPath();
+  context.arc(x, y, radius, 0, FULL_TURN);
+  context.stroke();
+  context.restore();
 }
 
 // Event listener functions.
@@ -240,7 +256,6 @@ function click(event) {
     y: event.clientY + camera.y,
   };
 
-  // const target = lilies.find(lily => Collides(clickEntity, lily));
   let target;
   for (const lily of lilies) {
     if (Distance(clickEntity, lily) < CLICK_RADIUS + lily.radius) {
@@ -253,7 +268,7 @@ function click(event) {
     return;
   }
 
-  assignFrog(frog, target);
+  moveToward(frog, target, FROG_SPEED);
 }
 
 /**
@@ -334,5 +349,5 @@ function keydown(event) {
     return;
   }
 
-  assignFrog(frog, target);
+  moveToward(frog, target);
 }
