@@ -177,16 +177,6 @@ function update(timestamp) {
     Draw(context, camera, lily, LILY_LAYERS);
   }
 
-
-  // Move and draw frog.
-  // if (frog.action) {
-  //   Move(frog, elapsed);
-  // } else {
-  //   frog.layers = [true, false];
-
-  //   frog.facing += (centerPad?.action?.rotation ?? 0) * elapsed;
-  // }
-
   if (frog.action !== null) {
     Move(frog, elapsed);
 
@@ -347,7 +337,7 @@ function click(event) {
  * @param {KeyboardEvent} event 
  */
 function keydown(event) {
-  if (frog.action || event.isComposing) {
+  if (frog.action !== null || event.isComposing) {
     return
   };
 
