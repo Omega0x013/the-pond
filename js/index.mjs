@@ -1,7 +1,7 @@
 import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Move } from './entity.mjs';
 import { Random, RandomBearing } from './random.mjs';
 
-const RENDER_RANGE = 1000;
+const RENDER_RANGE = 600;
 
 const SEARCH_RANGE = 300;
 const CLICK_RADIUS = 10;
@@ -9,7 +9,7 @@ const CLICK_RADIUS = 10;
 const LILY_MIN_SIZE = 35;
 const LILY_MAX_SIZE = 55;
 const ITEM_SPAWN_CHANCE = 0.02;
-const LILY_ROTATION_CHANCE = 0.1;
+const LILY_ROTATION_CHANCE = 0.10;
 const LILY_ROTATION_MEAN = 0;
 const LILY_ROTATION_STDEV = Math.PI * 0.00005;
 
@@ -93,7 +93,12 @@ for (let i = 0; i < 3; i++) {
   const fly = {
     radius: 20,
     action: null,
-    layers: [true]
+    layers: [true],
+    action: {
+      duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+      rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+      speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+    },
   };
   // Position the fly around the frog.
   repositionFly(fly, frog);
@@ -142,13 +147,16 @@ function update(timestamp) {
   // TODO: Calculate camera position.
   camera = { x: frog.x - canvas.width / 2, y: frog.y - canvas.height / 2 }
 
+
   // If the frog is sitting on a lily, save that lily.
-  let satOnLily;
+  let centerPad;
 
   // Move and draw lilypads.
   for (const lily of lilies) {
+    // Move lily.
     if (lily.action) {
       Move(lily, elapsed);
+      // Lillies have infinite duration actions, so we can ignore the result
     }
 
     const distance = Distance(frog, lily);
@@ -163,34 +171,52 @@ function update(timestamp) {
         lily.item = 0;
         lily.layers = [true, false, false, false];
       }
-      satOnLily = lily;
+      centerPad = lily;
     }
 
     Draw(context, camera, lily, LILY_LAYERS);
   }
 
+
   // Move and draw frog.
+  // if (frog.action) {
+  //   Move(frog, elapsed);
+  // } else {
+  //   frog.layers = [true, false];
+
+  //   frog.facing += (centerPad?.action?.rotation ?? 0) * elapsed;
+  // }
+
   if (frog.action) {
     Move(frog, elapsed);
-  } else {
-    frog.layers = [true, false];
 
-    frog.facing += (satOnLily?.action?.rotation ?? 0) * elapsed;
+    // The frog finished jumping this frame.
+    if (frog.action.duration <= 0) {
+      frog.layers = [true, false];
+      frog.action = null;
+    }
+  } else {
+    // Make use of the saved lily
+    frog.facing += (centerPad?.action?.rotation ?? 0) * elapsed;
   }
 
   Draw(context, camera, frog, FROG_LAYERS);
 
+
   // Move and draw flies.
   for (const fly of flies) {
     if (fly.action) {
-
       Move(fly, elapsed);
-    } else {
-      fly.action = {
-        duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
-        rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
-        speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
-      };
+
+      // Fly finished movement this frame.
+      if (fly.action.duration <= 0) {
+        // Give it a new action
+        fly.action = {
+          duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+          rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+          speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+        };
+      }
     }
 
     if (frog.action !== null && Distance(frog, fly) < frog.radius + fly.radius) {

@@ -166,16 +166,12 @@ export function Draw(context, camera, a, layers) {
 }
 
 /**
- * Evaluate action logic of the entity, erasing the action once it's complete
+ * Evaluate action logic of the entity, returns true if the action is done.
  * @param {Entity} a 
  * @param {number} elapsed
  */
 export function Move(a, elapsed) {
-    // Short-circuit if there's no action to perform.
-    if (a.action === null) {
-        return;
-    }
-    // Choose the lower time for the calculations.
+    // Choose the lower time for the calculations so the entity doesn't overshoot.
     const time = Math.min(elapsed, a.action.duration);
 
     // Rotate the entity.
@@ -183,14 +179,18 @@ export function Move(a, elapsed) {
 
     // Move it according to its speed.
     // Here I've implicitly coupled facing direction and movement direction.
+    // This may need to be decoupled later.
     const {x, y} = OrbitPosition(a, a.action.speed * time, a.facing);
     a.x = x;
     a.y = y;
 
+    // Reduce remaining duration
+    a.action.duration -= elapsed;
+
     // Apply the duration changes / erase the action.
-    if (elapsed < a.action.duration) {
-        a.action.duration -= elapsed;
-    } else {
-        a.action = null;
-    }
+    // if (elapsed < a.action.duration) {
+    //     a.action.duration -= elapsed;
+    // } else {
+    //     a.action = null;
+    // }
 }
