@@ -60,14 +60,9 @@ function newLily(x, y) {
     layers: [true, false, false, false]
   };
 
-  // Add item
-  lily.item = Math.random() < ITEM_SPAWN_CHANCE && Math.floor(Math.random() * 3) + 1;
-  if (lily.item > 0) {
-    lily.layers[lily.item] = true;
-  }
-
-  // Add rotation
+  // If a lilypad rotates, it can't have an item on it, since the item graphics have a fixed orientation.
   if (Math.random() < LILY_ROTATION_CHANCE) {
+  // Add rotation
     lily.action = {
       duration: Infinity,
       rotation: Random(LILY_ROTATION_MEAN, LILY_ROTATION_STDEV),
@@ -75,7 +70,13 @@ function newLily(x, y) {
     };
   } else {
     lily.action = null;
+    // Add item
+    lily.item = Math.random() < ITEM_SPAWN_CHANCE && Math.floor(Math.random() * 3) + 1;
+    if (lily.item > 0) {
+      lily.layers[lily.item] = true;
+    }
   }
+
   return lily;
 }
 
