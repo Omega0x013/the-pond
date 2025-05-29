@@ -11,7 +11,7 @@ I originally developed this game for my Level 4 coursework while studying Softwa
 
 The coursework brief was to design a [Tamagotchi](https://en.wikipedia.org/wiki/Tamagotchi) pet. The pet needed to have a name and could become hungry, tired, and unclean. The user had to be able to interact with their pet to raise its stats, and the pet had to die if the stats got too low.
 
-My implementation was a frog that could hop around a pond. When the player clicked on a lily pad, the frog hops to it. It could catch flies to become less hungry, but each jump cost 1% stamina. Stamina would fully recharge after an hour. The frog could also pick up items: a toothbrush, a cookie, and a bottle of pills. These items would restore the frog's stats. I chose these items because I could draw them using only circles and squircles.
+My pet was a frog that could hop between lily pads on a pond. Each hop cost 1% stamina, and stamina would fully recover after 1 hour. The frog could catch flies to refill its hunger. It also was required to have a cleanliness stat; the stats regressed over a set period. Each stat could also be restored using a corresponding item: a bottle of pills for staying awake, a cookie for filling up hunger, and a toothbrush for cleaning the frog.
 
 ## New Game
 
