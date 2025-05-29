@@ -265,6 +265,9 @@ function click(event) {
   }
 
   if (!target) {
+    if (Distance(frog, clickEntity) > SEARCH_RANGE) {
+      overlayCircle = 1500;
+    }
     return;
   }
 
@@ -349,5 +352,5 @@ function keydown(event) {
     return;
   }
 
-  moveToward(frog, target);
+  moveToward(frog, target, FROG_SPEED);
 }
