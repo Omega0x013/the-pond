@@ -1,7 +1,7 @@
 import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Move } from './entity.mjs';
 import { Random, RandomBearing } from './random.mjs';
 
-const RENDER_RANGE = 600;
+const RENDER_RANGE = 1000;
 
 const SEARCH_RANGE = 300;
 const CLICK_RADIUS = 10;
@@ -62,7 +62,7 @@ function newLily(x, y) {
 
   // If a lilypad rotates, it can't have an item on it, since the item graphics have a fixed orientation.
   if (Math.random() < LILY_ROTATION_CHANCE) {
-  // Add rotation
+    // Add rotation
     lily.action = {
       duration: Infinity,
       rotation: Random(LILY_ROTATION_MEAN, LILY_ROTATION_STDEV),
@@ -147,7 +147,9 @@ function update(timestamp) {
 
   // Move and draw lilypads.
   for (const lily of lilies) {
-    Move(lily, elapsed);
+    if (lily.action) {
+      Move(lily, elapsed);
+    }
 
     const distance = Distance(frog, lily);
 
@@ -168,9 +170,9 @@ function update(timestamp) {
   }
 
   // Move and draw frog.
-  Move(frog, elapsed);
-
-  if (frog.action === null) {
+  if (frog.action) {
+    Move(frog, elapsed);
+  } else {
     frog.layers = [true, false];
 
     frog.facing += (satOnLily?.action?.rotation ?? 0) * elapsed;
@@ -180,9 +182,10 @@ function update(timestamp) {
 
   // Move and draw flies.
   for (const fly of flies) {
-    Move(fly, elapsed);
+    if (fly.action) {
 
-    if (fly.action === null) {
+      Move(fly, elapsed);
+    } else {
       fly.action = {
         duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
         rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
