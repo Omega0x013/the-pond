@@ -154,7 +154,7 @@ function update(timestamp) {
   // Move and draw lilypads.
   for (const lily of lilies) {
     // Move lily.
-    if (lily.action) {
+    if (lily.action !== null) {
       Move(lily, elapsed);
       // Lillies have infinite duration actions, so we can ignore the result
     }
@@ -187,7 +187,7 @@ function update(timestamp) {
   //   frog.facing += (centerPad?.action?.rotation ?? 0) * elapsed;
   // }
 
-  if (frog.action) {
+  if (frog.action !== null) {
     Move(frog, elapsed);
 
     // The frog finished jumping this frame.
@@ -205,7 +205,7 @@ function update(timestamp) {
 
   // Move and draw flies.
   for (const fly of flies) {
-    if (fly.action) {
+    if (fly.action !== null) {
       Move(fly, elapsed);
 
       // Fly finished movement this frame.
