@@ -1,4 +1,5 @@
-import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Random, RandomBearing, Move } from './entity.mjs';
+import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Move } from './entity.mjs';
+import { Random, RandomBearing } from './random.mjs';
 
 const RENDER_RANGE = 600;
 
@@ -7,7 +8,10 @@ const CLICK_RADIUS = 10;
 
 const LILY_MIN_SIZE = 35;
 const LILY_MAX_SIZE = 55;
-const ITEM_SPAWN_RATE = 0.02;
+const ITEM_SPAWN_CHANCE = 0.02;
+const LILY_ROTATION_CHANCE = 0.1;
+const LILY_ROTATION_MEAN = 0;
+const LILY_ROTATION_STDEV = Math.PI * 0.00005;
 
 const FROG_SPEED = 0.75;
 
@@ -40,23 +44,46 @@ const frog = {
   layers: [true, false]
 };
 
+/**
+ * Create a new lilypad at the desired coordinates.
+ * Each lily has a chance of having an item or rotating
+ * @param {number} x 
+ * @param {number} y 
+ * @returns {Entity}
+ */
+function newLily(x, y) {
+  const lily = {
+    x: x,
+    y: y,
+    radius: 40,
+    facing: RandomBearing(),
+    layers: [true, false, false, false]
+  };
+
+  // Add item
+  lily.item = Math.random() < ITEM_SPAWN_CHANCE && Math.floor(Math.random() * 3) + 1;
+  if (lily.item > 0) {
+    lily.layers[lily.item] = true;
+  }
+
+  // Add rotation
+  if (Math.random() < LILY_ROTATION_CHANCE) {
+    lily.action = {
+      duration: Infinity,
+      rotation: Random(LILY_ROTATION_MEAN, LILY_ROTATION_STDEV),
+      speed: 0
+    };
+  } else {
+    lily.action = null;
+  }
+  return lily;
+}
+
 // Create initial lily pads.
 const lilies = [];
 for (let y = -2000; y <= 2000; y += 200)
   for (let x = -2000; x <= 2000; x += 200) {
-    const lily = {
-      x: x,
-      y: y,
-      radius: 40,
-      facing: RandomBearing(),
-      action: null,
-      item: Math.random() < ITEM_SPAWN_RATE && Math.floor(Math.random() * 3) + 1,
-      layers: [true, false, false, false]
-    };
-    if (lily.item > 0) {
-      lily.layers[lily.item] = true;
-    }
-    lilies.push(lily);
+    lilies.push(newLily(x, y));
   }
 
 // Create flies.
@@ -86,7 +113,7 @@ document.addEventListener('keydown', keydown);
 /**
  * @type {number}
  */
-let previousTimestamp;
+let previousTimestamp = performance.now();
 
 /**
  * @type {{x: number, y: number}}
@@ -114,6 +141,9 @@ function update(timestamp) {
   // TODO: Calculate camera position.
   camera = { x: frog.x - canvas.width / 2, y: frog.y - canvas.height / 2 }
 
+  // If the frog is sitting on a lily, save that lily.
+  let satOnLily;
+
   // Move and draw lilypads.
   for (const lily of lilies) {
     Move(lily, elapsed);
@@ -124,9 +154,13 @@ function update(timestamp) {
       continue;
     }
 
+    // If the frog is touching the lilypad
     if (distance < frog.radius + lily.radius) {
-      lily.item = 0;
-      lily.layers = [true, false, false, false];
+      if (lily.item > 0) {
+        lily.item = 0;
+        lily.layers = [true, false, false, false];
+      }
+      satOnLily = lily;
     }
 
     Draw(context, camera, lily, LILY_LAYERS);
@@ -134,9 +168,13 @@ function update(timestamp) {
 
   // Move and draw frog.
   Move(frog, elapsed);
+
   if (frog.action === null) {
     frog.layers = [true, false];
+
+    frog.facing += (satOnLily?.action?.rotation ?? 0) * elapsed;
   }
+
   Draw(context, camera, frog, FROG_LAYERS);
 
   // Move and draw flies.
