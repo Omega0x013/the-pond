@@ -11,7 +11,7 @@ const LILY_MAX_SIZE = 55;
 const ITEM_SPAWN_CHANCE = 0.02;
 const LILY_ROTATION_CHANCE = 0.10;
 const LILY_ROTATION_MEAN = 0;
-const LILY_ROTATION_STDEV = Math.PI * 0.00005;
+const LILY_ROTATION_STDEV = Math.PI * 0.00001;
 
 const FROG_SPEED = 0.75;
 
@@ -19,9 +19,9 @@ const FLY_ORBIT = 400;
 const FLY_DURATION_MEAN = 2000;
 const FLY_DURATION_STDEV = 200;
 const FLY_ROTATION_MEAN = 0;
-const FLY_ROTATION_STDEV = Math.PI / 2048;
-const FLY_SPEED_MEAN = 0.1; // uses Math.abs
-const FLY_SPEED_STDEV = 0.1;
+const FLY_ROTATION_STDEV = Math.PI * 0.0005;
+const FLY_SPEED_MEAN = 0.15; // uses Math.abs
+const FLY_SPEED_STDEV = 0.05;
 
 const FULL_TURN = Math.PI * 2;
 const OVERLAY_DURATION = 1500;
@@ -31,8 +31,20 @@ if (navigator.serviceWorker && !navigator.serviceWorker.controller) {
   await navigator.serviceWorker.register('worker.mjs', { 'scope': '/the-pond/' })
 }
 
+/** @type {HTMLCanvasElement} */
 const canvas = document.querySelector('canvas');
+
+/** @type {CanvasRenderingContext2D} */
 const context = canvas.getContext('2d');
+
+/** @type {number} */
+let previousTimestamp = performance.now();
+
+/** @type {{x: number, y: number, scale: number}} */
+let camera = {};
+
+/** @type {number} */
+let overlayCircle;
 
 // Create the frog.
 const frog = {
@@ -94,11 +106,6 @@ for (let i = 0; i < 3; i++) {
     radius: 20,
     action: null,
     layers: [true],
-    action: {
-      duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
-      rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
-      speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
-    },
   };
   // Position the fly around the frog.
   repositionFly(fly, frog);
@@ -117,22 +124,6 @@ document.addEventListener('keydown', keydown);
 // Start main loop
 
 /**
- * @type {number}
- */
-let previousTimestamp = performance.now();
-
-/**
- * @type {{x: number, y: number}}
- */
-let camera;
-
-/**
- * The duration for which the overlay will continue to be shown onscreen.
- * @type {number}
- */
-let overlayCircle;
-
-/**
  * Main loop.
  * @param {DOMHighResTimeStamp} timestamp 
  */
@@ -144,9 +135,8 @@ function update(timestamp) {
   // Clear previous scene.
   context.clearRect(0, 0, canvas.width, canvas.height);
 
-  // TODO: Calculate camera position.
-  camera = { x: frog.x - canvas.width / 2, y: frog.y - canvas.height / 2 }
-
+  camera.x = frog.x - canvas.width / 2;
+  camera.y = frog.y - canvas.height / 2;
 
   // If the frog is sitting on a lily, save that lily.
   let centerPad;
@@ -242,6 +232,11 @@ function repositionFly(fly, frog) {
   fly.x = x;
   fly.y = y;
   fly.facing = Bearing(fly, frog);
+  fly.action = {
+    duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+    rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+    speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+  }
 }
 
 /**

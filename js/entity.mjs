@@ -8,8 +8,8 @@
  * @typedef {Object} Layer A drawable image layer
  * @property {boolean} enabled Whether or not to draw this layer
  * @property {HTMLImageElement} image Source image used to draw the layer
- * @property {number} cx Rotational center of the image
- * @property {number} cy Rotational center of the image
+ * @property {number} cx Rotational center of the image (px)
+ * @property {number} cy Rotational center of the image (px)
  * @property {number} scale Scale factor used to draw the image
  * @property {number | undefined} orientation Fixed orientation rotation
  */
@@ -23,12 +23,12 @@
 
 /**
  * @typedef {Object} Entity Entities are game objects, implemented as circles.
- * @property {number} x Center of the entity
- * @property {number} y Center of the entity
- * @property {number} radius Radius of the entity
+ * @property {number} x Center of the entity (u)
+ * @property {number} y Center of the entity (u)
+ * @property {number} radius Radius of the entity (u)
  * @property {number | null} facing Orientation of the entity (rad)
  * @property {Action | null} action The action the entity is performing
- * @property {boolean[]} layers Whether each layer is enabled/disabled
+ * @property {boolean[] | null} layers Whether each layer is enabled/disabled
  */
 
 // Graphics.
@@ -180,7 +180,7 @@ export function Move(a, elapsed) {
     // Move it according to its speed.
     // Here I've implicitly coupled facing direction and movement direction.
     // This may need to be decoupled later.
-    const {x, y} = OrbitPosition(a, a.action.speed * time, a.facing);
+    const { x, y } = OrbitPosition(a, a.action.speed * time, a.facing);
     a.x = x;
     a.y = y;
 
