@@ -1,5 +1,5 @@
 import { FLY_LAYERS, FROG_LAYERS, LILY_LAYERS, Distance, Bearing, OrbitPosition, Draw, Move } from './entity.mjs';
-import { Random, RandomBearing } from './random.mjs';
+import { Normal, RandomBearing, RandomDisc } from './random.mjs';
 
 const RENDER_RANGE = 600;
 
@@ -77,7 +77,7 @@ function newLily(x, y) {
     // Add rotation
     lily.action = {
       duration: Infinity,
-      rotation: Random(LILY_ROTATION_MEAN, LILY_ROTATION_STDEV),
+      rotation: Normal(LILY_ROTATION_MEAN, LILY_ROTATION_STDEV),
       speed: 0
     };
   } else {
@@ -93,11 +93,16 @@ function newLily(x, y) {
 }
 
 // Create initial lily pads.
+const sample = RandomDisc([2000, 2000], 175, 5);
 const lilies = [];
-for (let y = -2000; y <= 2000; y += 200)
-  for (let x = -2000; x <= 2000; x += 200) {
-    lilies.push(newLily(x, y));
-  }
+for (const [x, y] of sample) {
+  lilies.push(newLily(x-1000, y-1000))
+}
+// for 
+// for (let y = -2000; y <= 2000; y += 200)
+//   for (let x = -2000; x <= 2000; x += 200) {
+//     lilies.push(newLily(x, y));
+//   }
 
 // Create flies.
 const flies = [];
@@ -192,9 +197,9 @@ function update(timestamp) {
       if (fly.action.duration <= 0) {
         // Give it a new action
         fly.action = {
-          duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
-          rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
-          speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+          duration: Math.abs(Normal(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+          rotation: Normal(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+          speed: Math.abs(Normal(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
         };
       }
     }
@@ -233,9 +238,9 @@ function repositionFly(fly, frog) {
   fly.y = y;
   fly.facing = Bearing(fly, frog);
   fly.action = {
-    duration: Math.abs(Random(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
-    rotation: Random(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
-    speed: Math.abs(Random(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
+    duration: Math.abs(Normal(FLY_DURATION_MEAN, FLY_DURATION_STDEV)),
+    rotation: Normal(FLY_ROTATION_MEAN, FLY_ROTATION_STDEV),
+    speed: Math.abs(Normal(FLY_SPEED_MEAN, FLY_SPEED_STDEV))
   }
 }
 
