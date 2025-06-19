@@ -395,7 +395,7 @@ function keydown(event) {
     const angle = Math.abs(Math.atan2(Math.sin(difference), Math.cos(difference)));
 
     // 
-    if (angle > .125) {
+    if (angle > (Math.PI*.5)) {
       continue;
     }
 
