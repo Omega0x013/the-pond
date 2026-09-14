@@ -2,7 +2,7 @@ import { FROG_LAYERS } from '../sprite/frog/frog.mjs';
 
 const FROG_SPEED = 0.75; // u/ms
 const TWO_PI = Math.PI * 2;
-export const FROG_JUMP_LIMIT = 800;
+export const FROG_JUMP_LIMIT = 400;
 
 /** @extends import("./main.mjs").Entity */
 export class Frog {

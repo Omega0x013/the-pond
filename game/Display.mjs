@@ -145,7 +145,13 @@ export class Display {
   }
 
   #keydown(event) {
+    const vector = DIR_VECTORS.get(event.code);
+    // If they didn't press a registered key, don't do anything
+    if (!vector) {
+      return;
+    }
+
     this.pendingInput.type = 'keydown';
-    this.pendingInput.content = DIR_VECTORS.get(event.code);
+    this.pendingInput.content = vector;
   }
 }
