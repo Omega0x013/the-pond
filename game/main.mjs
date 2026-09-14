@@ -96,6 +96,11 @@ function update(timestamp) {
   let { type: pendingType, content: pendingAction } = display.pendingInput;
   display.pendingInput.type = null; // unset the pending action
 
+  if (pendingType && !pendingAction) {
+    console.warn('Pending input registered, but content was not present.', pendingType, pendingAction);
+    pendingType = null;
+  }
+
   // Target Lily, suitability score (for keydown)
   let targetLily, targetLilyScore = -Infinity;
 
