@@ -25,6 +25,7 @@ export class Display {
     scale: 1,
     offsetX: 0,
     offsetY: 0,
+    dpr: 1,
   };
 
   #camera = {
@@ -56,8 +57,6 @@ export class Display {
 
   SetupContext() {
     this.#context.reset();
-
-    this.#context.imageSmoothingEnabled = true;
 
     this.#context.translate(this.#viewport.offsetX, this.#viewport.offsetY);
     this.#context.scale(this.#viewport.scale, this.#viewport.scale);
@@ -112,24 +111,36 @@ export class Display {
   }
 
   #resize() {
-    this.#viewport.width = window.innerWidth;
-    this.#viewport.height = window.innerHeight;
-    this.#viewport.scale = Math.min(this.#viewport.width / SAFE_SIZE, this.#viewport.height / SAFE_SIZE);
-    this.#viewport.offsetX = (this.#viewport.width - SAFE_SIZE * this.#viewport.scale) / 2;
-    this.#viewport.offsetY = (this.#viewport.height - SAFE_SIZE * this.#viewport.scale) / 2;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
 
-    // Cause canvas to reflect the stored viewport
-    this.#canvas.width = this.#viewport.width;
-    this.#canvas.height = this.#viewport.height;
+    // Cache the screen dimensions for speed
+    const cssWidth = window.innerWidth;
+    const cssHeight = window.innerHeight;
+
+    // Make the canvas the same virtual pixels as physical
+    this.#canvas.width = Math.floor(cssWidth * dpr);
+    this.#canvas.height = Math.floor(cssHeight * dpr);
+
+    // Make sure the canvas is the same size onscreen
+    this.#canvas.style.width = `${cssWidth}px`;
+    this.#canvas.style.height = `${cssHeight}px`;
+
+    this.#viewport.width = cssWidth;
+    this.#viewport.height = cssHeight;
+    this.#viewport.scale = (Math.min(this.#canvas.width, this.#canvas.height) / SAFE_SIZE);
+    this.#viewport.offsetX = (this.#canvas.width - SAFE_SIZE * this.#viewport.scale) / 2;
+    this.#viewport.offsetY = (this.#canvas.height - SAFE_SIZE * this.#viewport.scale) / 2;
+    this.#viewport.dpr = dpr; // Store for input coordinate mapping
   }
 
   #click(event) {
     this.pendingInput.type = 'click';
 
     const rect = this.#canvas.getBoundingClientRect();
+    const dpr = this.#viewport.dpr || 1;
 
-    const rawX = event.clientX - rect.left;
-    const rawY = event.clientY - rect.top;
+    const rawX = (event.clientX - rect.left) * dpr;
+    const rawY = (event.clientY - rect.top) * dpr;
 
     const safeX = (rawX - this.#viewport.offsetX) / this.#viewport.scale;
     const safeY = (rawY - this.#viewport.offsetY) / this.#viewport.scale;
@@ -141,7 +152,7 @@ export class Display {
 
     this.pendingInput.content = {
       x: (centeredX / zoom) + this.#camera.x,
-      y: (centeredY / zoom) + this.#camera.y, // Matches the rendering -camera.y
+      y: (centeredY / zoom) + this.#camera.y,
       radius: CLICK_RADIUS / (this.#viewport.scale * zoom),
     };
   }
