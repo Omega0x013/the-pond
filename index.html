@@ -4,21 +4,19 @@
 <meta charset=UTF-8>
 <meta name=viewport content="width=device-width, initial-scale=1.0">
 <link rel=manifest href=manifest.json crossorigin=use-credentials>
-<link rel=icon href=img/frog-sit.svg>
+<link rel=icon href=sprite/frog/frog-sit.svg>
 <link rel=stylesheet href=style.css>
 <script defer src="https://cdn.jsdelivr.net/gh/kchapelier/fast-2d-poisson-disk-sampling@1.0.3/build/fast-poisson-disk-sampling.min.js"></script>
-<script defer type=module src=js/index.mjs></script>
+<script defer type=module src="game/main.mjs"></script>
 
 <!-- Game canvas -->
 <canvas></canvas>
 
-<!-- Images to avoid making requests for each new render -->
-<img id="brush" src="img/brush.svg">
-<img id="cookie" src="img/cookie.svg">
-<!-- <img id="empty" href="img/empty.svg"> -->
-<img id="fly" src="img/fly.svg">
-<img id="frog-jump" src="img/frog-jump.svg">
-<img id="frog-sit" src="img/frog-sit.svg">
-<img id="lily" src="img/lily.svg">
-<!-- <img id="marshmallow" href="img/marshmallow.svg"> -->
-<img id="pill" src="img/pill.svg">
+<!-- Load sprite images -->
+<img id="fly" src="sprite/fly/fly.svg">
+<img id="frog-jump" src="sprite/frog/frog-jump.svg">
+<img id="frog-sit" src="sprite/frog/frog-sit.svg">
+<img id="brush" src="sprite/lily/brush.svg">
+<img id="cookie" src="sprite/lily/cookie.svg">
+<img id="lily" src="sprite/lily/lily.svg">
+<img id="pill" src="sprite/lily/pill.svg">
