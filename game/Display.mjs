@@ -6,8 +6,8 @@ const DIR_VECTORS = new Map([
   ["KeyW", { x: 0, y: -1 }], ["ArrowUp", { x: 0, y: -1 }],
 ])
 
-const CLICK_RADIUS = 10;
-const SAFE_SIZE = 1000; // px
+export const CLICK_RADIUS = 20;
+const SAFE_SIZE = 800; // px
 const HARD_CIRCLE = 80; // u
 const HARD_CIRCLE_SQ = HARD_CIRCLE * HARD_CIRCLE;
 const HALF_PI = Math.PI / 2;
@@ -56,6 +56,8 @@ export class Display {
 
   SetupContext() {
     this.#context.reset();
+
+    this.#context.imageSmoothingEnabled = true;
 
     this.#context.translate(this.#viewport.offsetX, this.#viewport.offsetY);
     this.#context.scale(this.#viewport.scale, this.#viewport.scale);

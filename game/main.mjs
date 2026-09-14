@@ -1,4 +1,4 @@
-import { Display } from "./Display.mjs";
+import { CLICK_RADIUS, Display } from "./Display.mjs";
 import { CreateFly, CreateFlyAction, FLY_ORBIT_SQ, RepositionFly } from "./fly.mjs";
 import { Frog, FROG_JUMP_LIMIT } from "./frog.mjs";
 import { CreateLily, LILY_SIZE_MEAN } from "./map.mjs";
@@ -39,7 +39,7 @@ if (navigator.serviceWorker && !navigator.serviceWorker.controller) {
 const TWO_PI = Math.PI * 2;
 
 // TODO: replace size mean with actual size of each lily?
-const CLICK_SCAN_RANGE_SQ = 100 + LILY_SIZE_MEAN * LILY_SIZE_MEAN;
+const CLICK_SCAN_RANGE_SQ = CLICK_RADIUS * CLICK_RADIUS + LILY_SIZE_MEAN * LILY_SIZE_MEAN;
 const KEYDOWN_SCAN_RANGE_SQ = FROG_JUMP_LIMIT * FROG_JUMP_LIMIT // I'm just guessing
 
 const display = new Display(); // Start up the display
