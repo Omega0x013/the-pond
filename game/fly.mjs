@@ -13,12 +13,15 @@ const FLY_SPEED_MEAN = 0.15;
 const FLY_SPEED_STDEV = 0.05;
 
 
+const FLY_BASE_MASK = 0b1;
+
+
 export function CreateFly(frog) {
   const fly = {
     x: 0,
     y: 0,
     graphics: FLY_LAYERS,
-    shown: [true],
+    shown: FLY_BASE_MASK,
     action: CreateFlyAction(),
   }
 

@@ -72,7 +72,7 @@ export class Display {
     this.#context.rotate(entity.facing + HALF_PI);
 
     for (let layer = 0; layer < entity.graphics.length; layer += 1) {
-      if (entity.shown.at(layer) === false) {
+      if ((entity.shown & (1 << layer)) === 0) {
         continue;
       }
 

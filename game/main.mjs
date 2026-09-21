@@ -1,7 +1,7 @@
 import { CLICK_RADIUS, Display } from "./Display.mjs";
 import { CreateFly, CreateFlyAction, FLY_ORBIT_SQ, RepositionFly } from "./fly.mjs";
-import { Frog, FROG_JUMP_LIMIT } from "./frog.mjs";
-import { CreateLily, LILY_SIZE_MEAN } from "./map.mjs";
+import { Frog, FROG_JUMP_LIMIT, FROG_JUMP_MASK, FROG_SIT_MASK } from "./frog.mjs";
+import { CreateLily, LILY_SIZE_MEAN, LILY_BASE_MASK } from "./map.mjs";
 import { RandomDisc } from "./random.mjs";
 
 /**
@@ -27,7 +27,7 @@ import { RandomDisc } from "./random.mjs";
  * @property {number} facing Facing
  * @property {Action?} action 
  * @property {Graphic[]} graphics Array of graphics
- * @property {boolean[]} shown Which graphics are currently being shown
+ * @property {number} shown Which graphics are currently being shown
  */
 
 // Start the service worker.
@@ -122,7 +122,7 @@ function update(timestamp) {
 
         // TODO: add item-specific behaviours
         if (lily.item) {
-          lily.shown = [true, false, false, false];
+          lily.shown = LILY_BASE_MASK;
           lily.item = null;
         }
       }
@@ -183,7 +183,7 @@ function update(timestamp) {
 
     if (frog.action.duration <= 0) {
       frog.jumping = false;
-      frog.shown = [true, false];
+      frog.shown = FROG_SIT_MASK;
     }
   }
 

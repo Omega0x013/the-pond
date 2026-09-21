@@ -9,6 +9,13 @@ const LILY_ROTATION_CHANCE = 1;
 const LILY_ROTATION_MEAN = 0;
 const LILY_ROTATION_STDEV = Math.PI * 0.00001;
 
+
+export const LILY_BASE_MASK = 0b0001;
+const LILY_BRUSH_MASK = 0b0010;
+const LILY_COOKIE_MASK = 0b0100;
+const LILY_PILL_MASK = 0b1000;
+
+
 const ITEMS = [
   {
     name: "Brush",
@@ -36,7 +43,7 @@ export function CreateLily(x, y) {
     radius: LILY_SIZE_MEAN, // not currently supporting varied sizes
     facing: RandomBearing(),
     graphics: LILY_LAYERS,
-    shown: [true, false, false, false] // default graphics
+    shown: LILY_BASE_MASK // default graphics
   };
 
   // Some lilies spin
@@ -52,7 +59,7 @@ export function CreateLily(x, y) {
   if (Math.random() < ITEM_SPAWN_CHANCE) {
     const item = ITEMS.at(Math.floor(Math.random() * ITEMS.length));
     lily.item = item.name;
-    lily.shown[item.layer] = true;
+    lily.shown |= 1 << item.layer;
   }
 
   return lily;
