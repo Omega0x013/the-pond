@@ -1,4 +1,3 @@
-import { FLY_LAYERS } from "../sprite/fly/fly.mjs";
 import { RandomBearing, RandomNormal } from "./random.mjs";
 
 export const FLY_LAYERS = [
