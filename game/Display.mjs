@@ -66,17 +66,29 @@ export class Display {
     this.#context.translate(-this.#camera.x, -this.#camera.y);
   }
 
-  Draw(entity) {
-    this.#context.save();
-    this.#context.translate(entity.x, entity.y);
-    this.#context.rotate(entity.facing + HALF_PI);
+  DrawEntity(entity) {
+    this.Draw(entity.x, entity.y, entity.facing, entity.shown, entity.graphics);
+  }
 
-    for (let layer = 0; layer < entity.graphics.length; layer += 1) {
-      if ((entity.shown & (1 << layer)) === 0) {
+  /**
+   * 
+   * @param {number} x 
+   * @param {number} y 
+   * @param {number} facing 
+   * @param {number} shown 
+   * @param {import("./main.mjs").Graphic[]} layers 
+   */
+  Draw(x, y, facing, shown, layers) {
+    this.#context.save();
+    this.#context.translate(x, y);
+    this.#context.rotate(facing + HALF_PI);
+
+    for (let layer = 0; layer < layers.length; layer += 1) {
+      if ((shown & (1 << layer)) === 0) {
         continue;
       }
 
-      const graphic = entity.graphics.at(layer);
+      const graphic = layers[layer];
 
       this.#context.drawImage(
         graphic.image,

@@ -1,7 +1,8 @@
+import { LILY_LAYERS } from "../sprite/lily/lily.mjs";
 import { CLICK_RADIUS, Display } from "./Display.mjs";
 import { CreateFly, CreateFlyAction, FLY_ORBIT_SQ, RepositionFly } from "./fly.mjs";
-import { Frog, FROG_JUMP_LIMIT, FROG_JUMP_MASK, FROG_SIT_MASK } from "./frog.mjs";
-import { CreateLily, LILY_SIZE_MEAN, LILY_BASE_MASK } from "./map.mjs";
+import { Frog, FROG_JUMP_LIMIT, FROG_SIT_MASK } from "./frog.mjs";
+import { CreateLily, LILY_RADIUS_MEAN, LILY_BASE_MASK, ChunkIndex, CHUNK_SIZE, FindLocalChunks, LILY_STRIDE, LILY_OFFSET_FACING, LILY_OFFSET_X, LILY_OFFSET_ROTATION, LILY_OFFSET_SHOWN, LILY_OFFSET_Y, CreateRandomChunk } from "./map.mjs";
 import { RandomDisc } from "./random.mjs";
 
 /**
@@ -39,19 +40,41 @@ if (navigator.serviceWorker && !navigator.serviceWorker.controller) {
 const TWO_PI = Math.PI * 2;
 
 // TODO: replace size mean with actual size of each lily?
-const CLICK_SCAN_RANGE_SQ = CLICK_RADIUS * CLICK_RADIUS + LILY_SIZE_MEAN * LILY_SIZE_MEAN;
+const CLICK_SCAN_RANGE_SQ = CLICK_RADIUS * CLICK_RADIUS + LILY_RADIUS_MEAN * LILY_RADIUS_MEAN;
 const KEYDOWN_SCAN_RANGE_SQ = FROG_JUMP_LIMIT * FROG_JUMP_LIMIT // I'm just guessing
 
 const display = new Display(); // Start up the display
 
 const frog = new Frog();
 
-const sample = RandomDisc([2000, 2000], 175, 5);
-/** @type {Entity[]} */
-const lilies = [];
-for (const [x, y] of sample) {
-  lilies.push(CreateLily(x - 1000, y - 1000))
+// const sample = RandomDisc([2000, 2000], 175, 5);
+/** @type {Map<number, Float32Array>} */
+const lilies = new Map();
+const chunk = CreateRandomChunk(0, 0);
+let targetDSq = Infinity, targetX, targetY;
+for (let offset = 0; offset < chunk.length; offset += LILY_STRIDE) {
+  const x = chunk[offset + LILY_OFFSET_X];
+  const y = chunk[offset + LILY_OFFSET_Y];
+
+  const dx = frog.x - x;
+  const dy = frog.y - y;
+  const dSq = dx * dx + dy * dy;
+
+  if (dSq < targetDSq) {
+    targetDSq = dSq;
+    targetX = x, targetY = y;
+  }
 }
+frog.x = targetX, frog.y = targetY;
+lilies.set(ChunkIndex(0, 0), chunk);
+
+// const chunk = new Float32Array(sample.length * LILY_STRIDE);
+// let offset = 0;
+// for (const [x, y] of sample) {
+//   CreateLily(chunk, offset, x, y);
+//   offset += LILY_STRIDE;
+// }
+// lilies.set(ChunkIndex(0, 0), chunk);
 
 /** @type {Entity[]} */
 const flies = Array.from({ length: 5 }, () => CreateFly(frog));
@@ -88,6 +111,7 @@ export function Move(entity, elapsed) {
 }
 
 let previousTimestamp = performance.now();
+const localChunks = [];
 function update(timestamp) {
   const elapsed = timestamp - previousTimestamp;
   previousTimestamp = timestamp;
@@ -101,81 +125,103 @@ function update(timestamp) {
     pendingType = null;
   }
 
-  // Target Lily, suitability score (for keydown)
-  let targetLily, targetLilyScore = -Infinity;
+  // Select the best candidate lily to jump to.
+  let targetLilyScore = -Infinity, targetLilyDx, targetLilyDy, targetLilyDSq;
+  const frogX = frog.x, frogY = frog.y;
 
-  for (const lily of lilies) {
-    // If the frog is jumping, short-circuit
-    if (frog.jumping) {
-      Move(lily, elapsed);
-      continue;
-    }
+  const count = FindLocalChunks(lilies, frogX, frogY, localChunks);
 
-    const frog_dx = frog.x - lily.x;
-    const frog_dy = frog.y - lily.y;
-    const frog_dSq = frog_dx * frog_dx + frog_dy * frog_dy
+  // Update lilypads
+  for (let n = 0; n < count; n += 1) {
+    const chunk = localChunks[n];
+    for (let offset = 0; offset < chunk.length; offset += LILY_STRIDE) {
+      let facing = chunk[offset + LILY_OFFSET_FACING];
+      const rotation = chunk[offset + LILY_OFFSET_ROTATION];
 
-    if (pendingType === null) {
-      // If the frog is touching a lily, it rotates with it
-      if (frog_dSq < 1_600) {
-        frog.action = Object.assign({}, lily.action);
+      // Rotate lily
+      facing += rotation * elapsed;
+      chunk[offset + LILY_OFFSET_FACING] = facing;
+
+      // We don't have to scan any lilies if the frog is jumping
+      if (frog.jumping) {
+        continue;
+      }
+
+      const x = chunk[offset + LILY_OFFSET_X];
+      const y = chunk[offset + LILY_OFFSET_Y];
+      const shown = chunk[offset + LILY_OFFSET_SHOWN];
+
+      // Draw frog
+      display.Draw(x, y, facing, shown, LILY_LAYERS);
+
+      const frogDx = frogX - x;
+      const frogDy = frogY - y;
+      const frogDSq = frogDx * frogDx + frogDy * frogDy;
+
+      if (pendingType === null) {
+        if (frogDSq > 1_600) {
+          continue;
+        }
 
         // TODO: add item-specific behaviours
-        if (lily.item) {
-          lily.shown = LILY_BASE_MASK;
-          lily.item = null;
+        if (shown > LILY_BASE_MASK) {
+          chunk[offset + LILY_OFFSET_SHOWN] = LILY_BASE_MASK;
         }
-      }
 
-      Move(lily, elapsed);
-      continue;
-    }
+        frog.action = {
+          rotation,
+          duration: Infinity,
+          speed: 0,
+        }
 
-    if (pendingType === 'click') {
-      const click_dx = pendingAction.x - lily.x;
-      const click_dy = pendingAction.y - lily.y;
-      const click_dSq = click_dx * click_dx + click_dy * click_dy;
-
-      // If the click touches a lily, and the frog isn't touching it
-      if (click_dSq < CLICK_SCAN_RANGE_SQ && !(frog_dSq < 1_600)) {
-        frog.JumpTo(frog_dx, frog_dy, frog_dSq);
-      }
-
-      Move(lily, elapsed);
-      continue;
-    }
-
-    if (pendingType === 'keydown') {
-      if (frog_dSq > KEYDOWN_SCAN_RANGE_SQ || frog_dSq < 250) {
-        Move(lily, elapsed);
         continue;
       }
 
-      const distance = Math.sqrt(frog_dSq);
-      const nx = -frog_dx / distance;
-      const ny = -frog_dy / distance;
+      if (pendingType === 'click') {
+        const clickDx = pendingAction.x - x;
+        const clickDy = pendingAction.y - y;
+        const clickDSq = clickDx * clickDx + clickDy * clickDy;
 
-      const alignment = pendingAction.x * nx + pendingAction.y * ny;
+        if (clickDSq >= CLICK_SCAN_RANGE_SQ || frogDSq < 1_600) {
+          continue;
+        }
 
-      if (alignment <= 0) {
-        Move(lily, elapsed);
+        frog.JumpTo(frogDx, frogDy, frogDSq);
+
         continue;
       }
 
-      const score = alignment / distance;
-      if (score > targetLilyScore) {
-        targetLily = lily;
-        targetLilyScore = score;
-      }
+      if (pendingType === 'keydown') {
+        if (frogDSq >= KEYDOWN_SCAN_RANGE_SQ || frogDSq < 250) {
+          continue;
+        }
 
-      Move(lily, elapsed);
-      continue;
+        const distance = Math.sqrt(frogDSq);
+        const nx = -frogDx / distance;
+        const ny = -frogDy / distance;
+
+        const alignment = pendingAction.x * nx + pendingAction.y * ny;
+
+        // A negative alignment is too low to consider
+        if (alignment <= 0) {
+          continue;
+        }
+
+        const score = alignment / distance;
+        if (score > targetLilyScore) {
+          targetLilyDx = frogDx;
+          targetLilyDy = frogDy;
+          targetLilyDSq = frogDSq;
+          targetLilyScore = score;
+        }
+
+        continue;
+      }
     }
   }
 
-  // If keyboard input was used, take a look
-  if (targetLily) {
-    frog.JumpToEntity(targetLily);
+  if (targetLilyScore > 0) {
+    frog.JumpTo(targetLilyDx, targetLilyDy, targetLilyDSq);
   }
 
   if (frog.action) {
@@ -213,18 +259,26 @@ function update(timestamp) {
   display.FocusOn(frog.x, frog.y);
   display.SetupContext();
 
-  for (const lily of lilies) {
-    display.Draw(lily);
+  for (let n = 0; n < count; n += 1) {
+    const chunk = localChunks[n];
+    for (let offset = 0; offset < chunk.length; offset += LILY_STRIDE) {
+      display.Draw(
+        chunk[offset + LILY_OFFSET_X],
+        chunk[offset + LILY_OFFSET_Y],
+        chunk[offset + LILY_OFFSET_FACING],
+        chunk[offset + LILY_OFFSET_SHOWN],
+        LILY_LAYERS
+      );
+    }
   }
 
-  display.Draw(frog);
+  display.DrawEntity(frog);
 
   for (const fly of flies) {
-    display.Draw(fly);
+    display.DrawEntity(fly);
   }
 
   window.requestAnimationFrame(update);
 }
 
 window.requestAnimationFrame(update);
-
