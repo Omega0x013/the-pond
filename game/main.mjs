@@ -1,9 +1,7 @@
-import { LILY_LAYERS } from "../sprite/lily/lily.mjs";
 import { CLICK_RADIUS, Display } from "./Display.mjs";
 import { CreateFly, CreateFlyAction, FLY_ORBIT_SQ, RepositionFly } from "./fly.mjs";
 import { Frog, FROG_JUMP_LIMIT, FROG_SIT_MASK } from "./frog.mjs";
-import { CreateLily, LILY_RADIUS_MEAN, LILY_BASE_MASK, ChunkIndex, CHUNK_SIZE, FindLocalChunks, LILY_STRIDE, LILY_OFFSET_FACING, LILY_OFFSET_X, LILY_OFFSET_ROTATION, LILY_OFFSET_SHOWN, LILY_OFFSET_Y, CreateRandomChunk } from "./map.mjs";
-import { RandomDisc } from "./random.mjs";
+import { LILY_LAYERS, LILY_RADIUS_MEAN, LILY_BASE_MASK, ChunkIndex, FindLocalChunks, LILY_STRIDE, LILY_OFFSET_FACING, LILY_OFFSET_X, LILY_OFFSET_ROTATION, LILY_OFFSET_SHOWN, LILY_OFFSET_Y, CreateRandomChunk } from "./map.mjs";
 
 /**
  * @typedef {Object} Action
@@ -67,14 +65,6 @@ for (let offset = 0; offset < chunk.length; offset += LILY_STRIDE) {
 }
 frog.x = targetX, frog.y = targetY;
 lilies.set(ChunkIndex(0, 0), chunk);
-
-// const chunk = new Float32Array(sample.length * LILY_STRIDE);
-// let offset = 0;
-// for (const [x, y] of sample) {
-//   CreateLily(chunk, offset, x, y);
-//   offset += LILY_STRIDE;
-// }
-// lilies.set(ChunkIndex(0, 0), chunk);
 
 /** @type {Entity[]} */
 const flies = Array.from({ length: 5 }, () => CreateFly(frog));

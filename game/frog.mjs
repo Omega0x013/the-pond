@@ -1,4 +1,17 @@
-import { FROG_LAYERS } from '../sprite/frog/frog.mjs';
+export const FROG_LAYERS = [
+  {
+    image: document.querySelector('#frog-sit'),
+    scale: .25,
+    cx: 135,
+    cy: 120
+  },
+  {
+    image: document.querySelector('#frog-jump'),
+    scale: .25,
+    cx: 93,
+    cy: 150
+  }
+]
 
 const FROG_SPEED = 0.75; // u/ms
 const TWO_PI = Math.PI * 2;

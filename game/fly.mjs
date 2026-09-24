@@ -1,6 +1,15 @@
 import { FLY_LAYERS } from "../sprite/fly/fly.mjs";
 import { RandomBearing, RandomNormal } from "./random.mjs";
 
+export const FLY_LAYERS = [
+  {
+    image: document.querySelector('#fly'),
+    scale: .1,
+    cx: 189,
+    cy: 70
+  }
+]
+
 const TWO_PI = Math.PI * 2;
 
 const FLY_ORBIT = 1000;
